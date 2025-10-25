@@ -1,33 +1,33 @@
 import React, { useEffect, useState } from 'react'
 import useUserStore from '../store/userStore'
 
-const AddUserModal = ({ open, setOpen ,selectedUser,setSelectedUser}) => {
+const AddUserModal = ({ open, setOpen, selectedUser, setSelectedUser }) => {
   const [form, setForm] = useState({ name: "", email: "", password: "", role: "" });
   const [errors, setErorr] = useState({})
   const createUser = useUserStore(state => state.createUser)
-  const updateUser = useUserStore(state =>state.updateUser)
-  const fetchUsers = useUserStore(state =>state.fetchUsers)
+  const updateUser = useUserStore(state => state.updateUser)
+  const fetchUsers = useUserStore(state => state.fetchUsers)
   // Kiem tra co phai la edit hay ko
-const isEdit = !!selectedUser
+  const isEdit = !!selectedUser
 
-  useEffect(()=>{
-    if(selectedUser){
+  useEffect(() => {
+    if (selectedUser) {
       setForm({
-        name:selectedUser.name,
-        email:selectedUser.email,
-        password:"",
-        role:selectedUser.role || ""
+        name: selectedUser.name,
+        email: selectedUser.email,
+        password: "",
+        role: selectedUser.role || ""
       })
-    }else{
+    } else {
       setForm({ name: "", email: "", password: "", role: "" });
     }
-  },[selectedUser])
+  }, [selectedUser])
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
 
-  
+
   const validate = () => {
     const errs = {}
     if (!form.name.trim()) errs.name = "Name là bắt buộc"
@@ -43,28 +43,28 @@ const isEdit = !!selectedUser
       setErorr(errs)
       return
     }
-    try{
-      const dataToSend ={...form}
-      if(!dataToSend.password) delete dataToSend.password
-    if(isEdit){
-      await updateUser(selectedUser.id,dataToSend)
-       alert("Cập nhật user thành công!");
-    }else{
+    try {
+      const dataToSend = { ...form }
+      if (!dataToSend.password) delete dataToSend.password
+      if (isEdit) {
+        await updateUser(selectedUser.id, dataToSend)
+        alert("Cập nhật user thành công!");
+      } else {
         await createUser(form)
-          alert("Thêm user thành công!");
-    }
-    await fetchUsers()
-   
-  }catch(errors){
+        alert("Thêm user thành công!");
+      }
+      await fetchUsers()
+
+    } catch (errors) {
       console.error("Lỗi khi lưu user:", err);
+    }
   }
-  }
-const handleClose=()=>{
+  const handleClose = () => {
     setOpen(false)
     setErorr({})
     setForm({ name: "", email: "", password: "", role: "" });
     setSelectedUser(null);
-}
+  }
 
 
   if (!open) return null
@@ -83,13 +83,23 @@ const handleClose=()=>{
 
           <div>
             <input name="email" value={form.email} onChange={handleChange} type="email" placeholder='Nhập email' className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-500 transition w-full" />
-           {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+            {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
           </div>
           <div><input name="password" value={form.password} onChange={handleChange} type="password" placeholder='Nhập mật khẩu' className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-500 transition w-full" />
-           {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
+            {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
           </div>
           <div>
-          <input name="role" value={form.role} onChange={handleChange} type="text" placeholder='Role (Optional) ' className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-500 transition w-full" />
+            <select
+              name="role"
+              value={form.role}
+              onChange={handleChange}
+              className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-500 transition w-full"
+            >
+              <option value="">Select Role (Optional)</option>
+              <option value="admin">Admin</option>
+              <option value="user">User</option>
+            </select>
+
           </div>
           <div className='flex justify-end gap-3 mt-4'>
             <button type='button' className="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400 transition" onClick={() => setOpen(false)}>Hủy</button>

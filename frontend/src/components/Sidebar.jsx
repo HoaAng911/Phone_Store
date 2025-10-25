@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { NavLink } from "react-router-dom";
-import { Home, Users, Settings, Box, Plus, List } from "lucide-react";
+import { Home, Users, Settings, Box, Plus, List, FileText } from "lucide-react";
 
 const SideBar = () => {
   const [openMenu, setOpenMenu] = useState(null); // quản lý submenu đang mở

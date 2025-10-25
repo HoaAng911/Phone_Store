@@ -1,6 +1,7 @@
-import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn ,UpdateDateColumn} from "typeorm";
 import { PhoneSpecification } from "./phone-specification.entity";
 import { ProductImage } from "./product-image.entity";
+
 
 
 @Entity('product')
@@ -8,19 +9,23 @@ export class ProductEntity{
   //Tu sinh khoa
   @PrimaryGeneratedColumn()
   id:number
-  @Column()
+  @Column({nullable:false})
   name:string
-  @Column('text')
+  @Column('text',{nullable:false})
   description:string
-  @Column()
+  @Column({type:'int',default:0})
   price:number
   @Column()
   brand:string
-  @Column({default:true})
+  @Column({ type: 'int', default: 0 })
   stock:number
+  @CreateDateColumn()
+  createdAt: Date;
+  @UpdateDateColumn()
+  updatedAt: Date;
   @OneToMany(()=>ProductImage,(images)=>images.product,{cascade:true, onDelete: 'CASCADE'})
-  images?:ProductImage[]
-  @OneToOne(()=>PhoneSpecification,(spec)=>spec.product,{cascade:true, onDelete: 'CASCADE'})
+  images:ProductImage[]
+    @OneToOne(()=>PhoneSpecification,(spec)=>spec.product,{cascade:true, onDelete: 'CASCADE'})
   @JoinColumn()
   specification:PhoneSpecification
 }
