@@ -1,5 +1,4 @@
 import { UploadModule } from './uploads/upload.module';
-
 import { ProductController } from './product/product.controller';
 import { ProductModule } from './product/product.module';
 import { Module } from '@nestjs/common';
@@ -7,14 +6,15 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './user/user.module';
-import { UserEntity } from './user/user.entity';
+import { UserEntity } from './user/entity/user.entity';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ProductEntity } from './product/product.entity';
-import { ProductImage } from './product/product-image.entity';
-import { PhoneSpecification } from './product/phone-specification.entity';
+import { ProductEntity } from './product/entity/product.entity';
+import { ProductImage } from './product/entity/product-image.entity';
+import { PhoneSpecification } from './product/entity/phone-specification.entity';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { AddressEntity } from './user/entity/address.entity';
 @Module({
   imports: [
        
@@ -24,6 +24,7 @@ import { join } from 'path';
     }),
     ProductModule,
     ConfigModule.forRoot({ isGlobal: true }),
+    
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -34,7 +35,7 @@ import { join } from 'path';
         username: config.get('DB_USER'),
         password: config.get('DB_PASS'),
         database: config.get('DB_NAME'),
-        entities: [UserEntity, ProductEntity, ProductImage, PhoneSpecification],
+        entities: [UserEntity, ProductEntity, ProductImage, PhoneSpecification,AddressEntity],
         synchronize: true,
       }),
     }),

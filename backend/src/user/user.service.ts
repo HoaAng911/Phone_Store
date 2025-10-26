@@ -1,62 +1,74 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserEntity } from './user.entity';
 import { Repository } from 'typeorm';
-import {CreateUserDto} from './dto/create-user.dto'
+import * as bcrypt from 'bcrypt';
+import { UserEntity } from './entity/user.entity';
+import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import bcrypt from 'bcrypt'
+
 @Injectable()
 export class UserService {
+  constructor(
+    @InjectRepository(UserEntity)
+    private readonly userRepo: Repository<UserEntity>,
+  ) {}
 
-  //contructor
-  constructor(@InjectRepository(UserEntity) private userRepo:Repository<UserEntity>){}
+  // 🔹 Lấy tất cả user
+  findAll(): Promise<UserEntity[]> {
+    return this.userRepo.find();
+  }
 
-  //Tim tat ca 
-  findAll():Promise<UserEntity[]>{
-    return this.userRepo.find()
-  }
-  //Tim theo id :trong entity id = number
-  async findOne(id:number): Promise<UserEntity>{
-    const user = await this.userRepo.findOne({where:{id}})
-    if(!user){ throw new NotFoundException('Khong tim thay user')}
-    return user
-  }
-  //Tao user
-  async create(data:CreateUserDto): Promise<UserEntity>{
-     if(data.password){
-      data.password = await bcrypt.hash(data.password,10) //hash password truoc khi luu
+  // 🔹 Lấy 1 user theo id
+  async findOne(id: number): Promise<UserEntity> {
+    const user = await this.userRepo.findOne({ where: { id } });
+    if (!user) {
+      throw new NotFoundException(`Không tìm thấy user có id = ${id}`);
     }
-    const user = this.userRepo.create(data)
-    return this.userRepo.save(user)
+    return user;
   }
-  //Update user id
-  async update(id:number,data:UpdateUserDto):Promise<UserEntity>{
-    const user = await this.findOne(id)
-    if(data.password){
-      data.password = await bcrypt.hash(data.password,10)
-    }
-    Object.assign(user,data)
-    return this.userRepo.save(user)  }
-    //xoa user theo id
-  async remove(id:number):Promise<{message:string}>{
-    const user = await this.findOne(id)
-      await this.userRepo.remove(user);
-      return { message: `Đã xóa user có id = ${id}` }; 
-  } 
-  //Thong ke
-  async getUserStats(){
-    const total = await this.userRepo.count()
-    const admin = await this.userRepo.count({where:{role:'admin'}})
-    return {total,admin}
+
+  // 🔹 Tạo user mới (hash mật khẩu nếu có)
+  async create(data: CreateUserDto): Promise<UserEntity> {
+    const user = this.userRepo.create({
+      ...data,
+      password: data.password ? await bcrypt.hash(data.password, 10) : undefined,
+    });
+    return this.userRepo.save(user);
   }
-  //Tim theo email  
-  async findByEmail(email:string) :Promise<UserEntity|null>{
-    return this.userRepo.findOne({where:{email}})
+
+  // 🔹 Cập nhật user
+  async update(id: number, data: UpdateUserDto): Promise<UserEntity> {
+    const user = await this.findOne(id);
+    const updatedUser = {
+      ...user,
+      ...data,
+      password: data.password ? await bcrypt.hash(data.password, 10) : user.password,
+    };
+    return this.userRepo.save(updatedUser);
   }
-  //Check email co trung khong (register)
-  async isEmailTaken(email:string):Promise<Boolean>{
-    const user = await this.findByEmail(email)
-    return !!user
+
+  // 🔹 Xóa user
+  async remove(id: number): Promise<{ message: string }> {
+    const user = await this.findOne(id);
+    await this.userRepo.remove(user);
+    return { message: `Đã xóa user có id = ${id}` };
+  }
+
+  // 🔹 Thống kê user
+  async getUserStats() {
+    const total = await this.userRepo.count();
+    const admin = await this.userRepo.count({ where: { role: 'admin' } });
+    return { total, admin };
+  }
+
+  // 🔹 Tìm theo email
+  findByEmail(email: string): Promise<UserEntity | null> {
+    return this.userRepo.findOne({ where: { email } });
+  }
+
+  // 🔹 Kiểm tra email đã tồn tại chưa
+  async isEmailTaken(email: string): Promise<boolean> {
+    const user = await this.findByEmail(email);
+    return Boolean(user);
   }
 }
-  

@@ -1,27 +1,31 @@
 import { Type } from "class-transformer";
-import { IsInt, IsNumberString, IsOptional, IsString } from "class-validator";
+import { IsInt, IsOptional, IsString } from "class-validator";
 
+export class ProductQueryDto {
+  @IsOptional()
+  @IsInt()
+  @Type(() => Number)
+  page?: number = 1;
 
-export class ProductQueryDto{
   @IsOptional()
   @IsInt()
-  @Type(()=>Number)
-  page?:number=1
+  @Type(() => Number)
+  limit?: number = 5;
+
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @IsOptional()
+  @IsString()
+  brand?: string;
+
   @IsOptional()
   @IsInt()
-  @Type(()=>Number)
-  limit?:number=5
+  @Type(() => Number)
+  priceMax?: number;
+
   @IsOptional()
   @IsString()
-  search?:string
-    @IsOptional()
-  @IsString()
-  brand?:string
-  @IsOptional()
-  @IsInt()
-  @Type(()=>Number)
-  priceMax?:number
-  @IsOptional()
-  @IsString()
-  sort?:'price_asc'|'price_desc'|'newest'|'oldest'
+  sort?: 'price_asc' | 'price_desc' | 'newest' | 'oldest';
 }

@@ -1,45 +1,71 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from 'src/user/user.service';
-import * as bcrypt from 'bcrypt'
+import * as bcrypt from 'bcrypt';
 import { UpdateProfileDto } from './dto/update-profile.dto';
-import { ExceptionsHandler } from '@nestjs/core/exceptions/exceptions-handler';
+
 @Injectable()
 export class AuthService {
-constructor(private userService:UserService,private jwtService:JwtService){}
+  constructor(
+    private readonly userService: UserService,
+    private readonly jwtService: JwtService,
+  ) {}
 
-//dang ky
-async register(data:any){
+  /** Đăng ký tài khoản mới */
+  async register(data: any) {
+    const existingUser = await this.userService.findByEmail(data.email);
 
-  //Check email da ton tai hay chx
-  const exitstingUser = await this.userService.findByEmail(data.email)
-  if(exitstingUser){
-    throw new BadRequestException('Email đã được sử dụng')
+    if (existingUser) {
+      throw new BadRequestException('Email đã được sử dụng');
+    }
+
+    // Hash mật khẩu trước khi tạo user
+    return this.userService.create(data);
   }
-  
-  const hashed= await bcrypt.hash(data.password,10)
 
-  return this.userService.create(({...data,password:hashed}))
-}
-//Dạng nhap
-async login(email:string,password:string){
-  const user = await this.userService.findByEmail(email)
-  if(!user) throw new UnauthorizedException('User not found')
-  const valid = await bcrypt.compare(password,user.password)
-  if(!valid)throw new UnauthorizedException('Invalid credentials')
-  const payload = {sub:user.id,email:user.email,role:user.role}
-  const token = this.jwtService.sign(payload)
-  return {access_token:token,user}
-}
-//Lay profile
-async getProfile(userId:number){
-  return this.userService.findOne(userId)
-}
-//Cap nhat profile
-async updateProfile(userId:number,dto:UpdateProfileDto){
-  if(dto.password){
-    dto.password = await bcrypt.hash(dto.password,10)
+  /** Đăng nhập và cấp JWT token */
+  async login(email: string, password: string) {
+    const user = await this.userService.findByEmail(email);
+
+    if (!user) {
+      throw new UnauthorizedException('Không tìm thấy người dùng');
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Sai mật khẩu');
+    }
+
+    // Tạo payload chứa thông tin cơ bản
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+    };
+
+    const token = this.jwtService.sign(payload);
+
+    return {
+      access_token: token,
+      user,
+    };
   }
-  return this.userService.update(userId,dto)
-}
+
+  /** Lấy thông tin cá nhân */
+  async getProfile(userId: number) {
+    return this.userService.findOne(userId);
+  }
+
+  /** Cập nhật thông tin cá nhân */
+  async updateProfile(userId: number, dto: UpdateProfileDto) {
+    if (dto.password) {
+      dto.password = await bcrypt.hash(dto.password, 10);
+    }
+
+    return this.userService.update(userId, dto);
+  }
 }

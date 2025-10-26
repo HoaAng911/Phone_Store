@@ -1,15 +1,16 @@
-import { IsEmail, IsOptional, IsString, MinLength } from "class-validator";
+import { IsEmail, IsOptional, IsString, MinLength } from 'class-validator';
 
+export class UpdateProfileDto {
+  @IsOptional()
+  @IsString({ message: 'Tên phải là chuỗi ký tự' })
+  name?: string;
 
-export class UpdateProfileDto{
   @IsOptional()
-  @IsString()
-  name?:string
-   @IsOptional()
-   @IsEmail()
-   email?:string
+  @IsEmail({}, { message: 'Email không hợp lệ' })
+  email?: string;
+
   @IsOptional()
-  @IsString()
-  @MinLength(6)
-  password?:string
+  @IsString({ message: 'Mật khẩu phải là chuỗi ký tự' })
+  @MinLength(6, { message: 'Mật khẩu phải có ít nhất 6 ký tự' })
+  password?: string;
 }
