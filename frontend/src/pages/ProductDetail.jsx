@@ -1,160 +1,189 @@
 import React, { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import useProductStore from "../store/productStore";
+import useProductStore from "../store/useProductStore";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ArrowLeft, Image as ImageIcon } from "lucide-react";
 
-/**
- *  Component: ProductDetail
- * Hiển thị chi tiết sản phẩm:
- *  - Ảnh sản phẩm
- *  - Thông tin cơ bản (tên, mô tả, giá, thương hiệu, tồn kho)
- *  - Thông số kỹ thuật
- */
 const ProductDetail = () => {
   const { id } = useParams();
   const { product, fetchProductById, loading } = useProductStore();
 
-  //  Fetch sản phẩm khi component mount hoặc id thay đổi
   useEffect(() => {
     fetchProductById(id);
   }, [id, fetchProductById]);
 
-  //  Loading state hoặc chưa có product
-  if (loading || !product)
+  if (loading || !product) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gray-50">
-        <p className="text-lg text-gray-500 animate-pulse font-medium">
-          Đang tải sản phẩm...
-        </p>
+      <div className="min-h-screen bg-background p-6">
+        <div className="max-w-5xl mx-auto space-y-6">
+          <div className="flex justify-between items-center">
+            <Skeleton className="h-9 w-48" />
+            <Skeleton className="h-10 w-24" />
+          </div>
+          <Card>
+            <CardContent className="p-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <Skeleton className="h-64 w-full rounded-lg" />
+                <div className="space-y-6">
+                  <Skeleton className="h-8 w-3/4" />
+                  <Skeleton className="h-20 w-full" />
+                  <div className="grid grid-cols-2 gap-4">
+                    <Skeleton className="h-16 w-full" />
+                    <Skeleton className="h-16 w-full" />
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
+  }
 
-  //  Chuẩn bị danh sách thông số kỹ thuật
+  // Specs data (giữ nguyên logic)
   const specs = [
-    { label: "Màn hình", value: product.specification.screenSize },
-    { label: "Độ phân giải", value: product.specification.resolution },
-    { label: "CPU", value: product.specification.cpu },
-    { label: "RAM", value: product.specification.ram },
-    { label: "Bộ nhớ", value: product.specification.storage },
-    { label: "Pin", value: product.specification.battery },
-    { label: "Hệ điều hành", value: product.specification.os },
-    { label: "Camera", value: product.specification.camera },
-    { label: "SIM", value: product.specification.sim },
-    { label: "Trọng lượng", value: product.specification.weight },
+    { label: "Màn hình", value: product.specification?.screenSize || "Không có" },
+    { label: "Độ phân giải", value: product.specification?.resolution || "Không có" },
+    { label: "CPU", value: product.specification?.cpu || "Không có" },
+    { label: "RAM", value: product.specification?.ram || "Không có" },
+    { label: "Bộ nhớ", value: product.specification?.storage || "Không có" },
+    { label: "Pin", value: product.specification?.battery || "Không có" },
+    { label: "Hệ điều hành", value: product.specification?.os || "Không có" },
+    { label: "Camera", value: product.specification?.camera || "Không có" },
+    { label: "SIM", value: product.specification?.sim || "Không có" },
+    { label: "Trọng lượng", value: product.specification?.weight || "Không có" },
     {
       label: "Màu sắc",
-      value: product.specification.colors?.length
+      value: product.specification?.colors?.length
         ? product.specification.colors.join(", ")
         : "Không có",
     },
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-5xl mx-auto">
+    <div className="min-h-screen bg-background p-6">
+      <div className="max-w-5xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-semibold text-gray-800">
-            Chi tiết sản phẩm
-          </h1>
-          <Link
-            to="/products/list"
-            className="flex items-center gap-2 px-4 py-2 bg-white text-gray-600 rounded-md shadow-sm hover:bg-gray-100 hover:text-gray-800 transition-all duration-200"
-          >
-            Quay lại
-          </Link>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Chi tiết sản phẩm</h1>
+            <p className="text-muted-foreground mt-1">Thông tin chi tiết về sản phẩm</p>
+          </div>
+          <Button asChild variant="outline">
+            <Link to="/products/list" className="gap-2">
+              <ArrowLeft className="w-4 h-4" />
+              Quay lại
+            </Link>
+          </Button>
         </div>
 
-        {/* Product Card */}
-        <div className="bg-white shadow-lg rounded-xl overflow-hidden border border-gray-100">
-          {/* Header ID */}
-          <div className="bg-gray-800 px-6 py-3">
-            <p className="text-white text-sm font-medium">ID: #{product.id}</p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6">
-            {/* Image Section */}
-            <div className="flex flex-col items-center justify-center">
-              <div className="relative">
-                {product.images?.[0]?.url ? (
-                  <img
-                    src={product.images[0].url}
-                    alt={product.name}
-                    className="w-64 h-64 object-contain rounded-lg shadow-md border border-gray-100"
-                  />
-                ) : (
-                  <div className="w-64 h-64 bg-gray-100 flex items-center justify-center text-gray-500 rounded-lg">
-                    No Image
-                  </div>
-                )}
-                <div className="absolute bottom-2 right-2 bg-gray-700 text-white px-2 py-1 rounded-full text-xs font-medium">
-                  {product.images?.length || 0} ảnh
-                </div>
-              </div>
+        {/* Main Product Card */}
+        <Card>
+          <CardHeader className="bg-muted/50 border-b-0">
+            <div className="flex items-center justify-between">
+              <CardTitle>ID: #{product.id}</CardTitle>
+              <Badge variant="secondary" className="text-xs">
+                {product.images?.length || 0} ảnh
+              </Badge>
             </div>
-
-            {/* Main Info */}
-            <div className="flex flex-col justify-center space-y-6">
-              <div>
-                <h2 className="text-2xl font-semibold text-gray-800 mb-2">
-                  {product.name}
-                </h2>
-                <p className="text-gray-600 text-sm leading-relaxed">
-                  {product.description}
-                </p>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
+              {/* Image Section */}
+              <div className="p-6 border-r lg:border-r-0">
+                <div className="flex flex-col items-center">
+                  {product.images?.[0]?.url ? (
+                    <img
+                      src={product.images[0].url}
+                      alt={product.name}
+                      className="w-full max-w-md h-64 object-contain rounded-lg shadow-md border"
+                    />
+                  ) : (
+                    <div className="w-full max-w-md h-64 bg-muted flex items-center justify-center rounded-lg text-muted-foreground">
+                      <ImageIcon className="w-16 h-16" />
+                      <p className="mt-2 text-sm">No Image</p>
+                    </div>
+                  )}
+                </div>
               </div>
 
-              <div className="space-y-4">
-                {/* Giá */}
-                <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-600">
-                  <p className="text-xs text-gray-500 mb-1">Giá bán</p>
-                  <p className="text-2xl font-semibold text-green-700">
-                    {product.price?.toLocaleString("vi-VN")}₫
-                  </p>
-                </div>
-
-                {/* Thương hiệu & Tồn kho */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
-                    <p className="text-xs text-gray-500 mb-1">Thương hiệu</p>
-                    <p className="font-medium text-gray-700">{product.brand}</p>
-                  </div>
-                  <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
-                    <p className="text-xs text-gray-500 mb-1">Tồn kho</p>
-                    <p
-                      className={`font-medium ${
-                        product.stock > 0 ? "text-green-600" : "text-red-500"
-                      }`}
-                    >
-                      {product.stock > 0
-                        ? `${product.stock} sản phẩm`
-                        : "Hết hàng"}
+              {/* Info Section */}
+              <div className="p-6">
+                <div className="space-y-6">
+                  {/* Product Name & Description */}
+                  <div>
+                    <h2 className="text-2xl font-bold text-foreground mb-3">
+                      {product.name}
+                    </h2>
+                    <p className="text-muted-foreground leading-relaxed">
+                      {product.description}
                     </p>
                   </div>
+
+                  {/* Price Card */}
+                  <Card className="bg-green-50 border-green-200">
+                    <CardContent className="p-4">
+                      <p className="text-sm text-muted-foreground mb-1">Giá bán</p>
+                      <p className="text-3xl font-bold text-green-700">
+                        {product.price?.toLocaleString("vi-VN")}₫
+                      </p>
+                    </CardContent>
+                  </Card>
+
+                  {/* Brand & Stock Cards */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <Card>
+                      <CardContent className="p-4">
+                        <p className="text-sm text-muted-foreground mb-2">Thương hiệu</p>
+                        <p className="font-semibold text-foreground">{product.brand}</p>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent className="p-4">
+                        <p className="text-sm text-muted-foreground mb-2">Tồn kho</p>
+                        <Badge
+                          variant={product.stock > 0 ? "default" : "destructive"}
+                          className={product.stock > 0 ? "bg-green-100 text-green-800" : ""}
+                        >
+                          {product.stock > 0 ? `${product.stock} sản phẩm` : "Hết hàng"}
+                        </Badge>
+                      </CardContent>
+                    </Card>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          </CardContent>
+        </Card>
 
-          {/* Specifications */}
-          {product.specification && (
-            <div className="bg-gray-50 px-6 py-8 border-t border-gray-200">
-              <h3 className="text-xl font-semibold text-gray-800 mb-6">
-                Thông số kỹ thuật
-              </h3>
+        {/* Specifications Section */}
+        {product.specification && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Thông số kỹ thuật</CardTitle>
+              <CardDescription>Chi tiết cấu hình sản phẩm</CardDescription>
+            </CardHeader>
+            <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {specs.map((spec, index) => (
-                  <div
-                    key={index}
-                    className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-200"
-                  >
-                    <p className="text-xs text-gray-500 font-medium">{spec.label}</p>
-                    <p className="text-sm text-gray-700 font-medium">{spec.value}</p>
-                  </div>
+                  <Card key={index} className="hover:shadow-md transition-shadow">
+                    <CardContent className="p-4">
+                      <p className="text-xs text-muted-foreground font-medium mb-1">
+                        {spec.label}
+                      </p>
+                      <p className="text-sm font-medium text-foreground">
+                        {spec.value}
+                      </p>
+                    </CardContent>
+                  </Card>
                 ))}
               </div>
-            </div>
-          )}
-        </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

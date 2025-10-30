@@ -1,46 +1,59 @@
+'use client';
+
 import React from 'react';
 import { Plus, X } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 
 const ColorInputList = ({ newColor, setNewColor, addColor, colors, removeColor }) => {
   return (
-    <div>
-      <label className="block text-sm font-medium text-gray-600 mb-2">Màu sắc</label>
-      <div className="flex items-center gap-2 mb-4">
-        <input
+    <div className="space-y-3">
+      <Label>Màu sắc</Label>
+
+      <div className="flex gap-2">
+        <Input
           type="text"
           value={newColor}
-          onChange={e => setNewColor(e.target.value)}
+          onChange={(e) => setNewColor(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && addColor()}
           placeholder="Thêm màu mới..."
-          className="flex-1 border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all duration-200"
+          className="flex-1"
         />
-        <button
+        <Button
           type="button"
           onClick={addColor}
-          className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200"
+          size="icon"
+          className="bg-blue-600 hover:bg-blue-700"
         >
-          <Plus size={16} />
-        </button>
+          <Plus className="h-4 w-4" />
+        </Button>
       </div>
+
       {colors.length > 0 ? (
         <div className="flex flex-wrap gap-2">
           {colors.map((color, index) => (
-            <div
+            <Badge
               key={index}
-              className="flex items-center gap-1 bg-gray-100 border border-gray-200 px-3 py-1 rounded-full"
+              variant="secondary"
+              className="flex items-center gap-1 px-3 py-1 text-sm"
             >
-              <span className="text-sm text-gray-700">{color}</span>
+              <span>{color}</span>
               <button
                 type="button"
                 onClick={() => removeColor(color)}
-                className="text-red-500 hover:text-red-600 transition-all duration-200"
+                className="ml-1 text-red-500 hover:text-red-600"
               >
-                <X size={14} />
+                <X className="h-3 w-3" />
               </button>
-            </div>
+            </Badge>
           ))}
         </div>
       ) : (
-        <p className="text-sm text-gray-500 italic">Chưa có màu nào được thêm</p>
+        <p className="text-sm text-muted-foreground italic">
+          Chưa có màu nào được thêm
+        </p>
       )}
     </div>
   );

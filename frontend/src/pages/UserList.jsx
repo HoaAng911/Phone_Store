@@ -1,80 +1,87 @@
-
 import { useEffect, useState } from "react";
 import useUserStore from "../store/userStore";
 import AddUserModal from "../components/AddUserModal";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Plus, Edit, Trash2 } from "lucide-react";
 
-/**
- * 🧩 Component: UserList
- * Quản lý hiển thị danh sách người dùng + thêm/sửa/xóa người dùng.
- * Sử dụng Zustand để quản lý dữ liệu người dùng toàn cục.
- */
 export default function UserList() {
-  // 📦 Lấy state & action từ Zustand store
   const { users, fetchUsers, loading, deleteUser } = useUserStore();
-
-  // 🧠 Quản lý trạng thái modal và người dùng được chọn
   const [open, setOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
 
-  /**
-   *  useEffect: Gọi API fetch danh sách người dùng khi component mount
-   *  - Chạy 1 lần đầu tiên khi trang load
-   */
   useEffect(() => {
     fetchUsers();
   }, [fetchUsers]);
 
-  /**
-   *  Xử lý xóa người dùng
-   *  - Hiện hộp thoại xác nhận
-   *  - Sau khi xóa thành công thì fetch lại danh sách
-   */
   const handleDelete = async (id) => {
     if (window.confirm("Bạn có chắc muốn xóa người dùng này?")) {
       await deleteUser(id);
-      fetchUsers(); // reload danh sách
+      fetchUsers();
     }
   };
 
-  /**
-   *  Mở modal sửa người dùng
-   *  - Gán `selectedUser` để modal hiển thị thông tin hiện tại
-   */
   const handleEdit = (user) => {
     setSelectedUser(user);
     setOpen(true);
   };
 
-  /**
-   * Mở modal thêm người dùng
-   *  - Xóa `selectedUser` để modal hiển thị form rỗng
-   */
   const handleAdd = () => {
     setSelectedUser(null);
     setOpen(true);
   };
 
-  //  Hiển thị trạng thái loading
+  // Loading Skeleton
   if (loading) {
-    return <p className="text-center mt-4">Đang tải...</p>;
+    return (
+      <div className="p-6 space-y-6">
+        <div className="flex justify-between items-center">
+          <Skeleton className="h-8 w-64" />
+          <Skeleton className="h-10 w-32" />
+        </div>
+        <Card>
+          <CardContent className="p-0">
+            <div className="space-y-4 p-6">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="flex gap-4 items-center">
+                  <Skeleton className="h-4 w-12" />
+                  <Skeleton className="h-4 flex-1" />
+                  <Skeleton className="h-4 w-48" />
+                  <Skeleton className="h-8 w-20" />
+                  <Skeleton className="h-8 w-24" />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   return (
-    <div className=" ">
-      {/*  Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold text-gray-800">
-          Danh sách người dùng
-        </h1>
-        <button
-          onClick={handleAdd}
-          className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg shadow-md transition-colors"
-        >
-          Thêm
-        </button>
+    <div className="p-6 space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Quản lý người dùng</h1>
+          <p className="text-muted-foreground mt-1">Thêm, sửa, xóa người dùng hệ thống</p>
+        </div>
+        <Button onClick={handleAdd} className="gap-2">
+          <Plus className="w-4 h-4" />
+          Thêm người dùng
+        </Button>
       </div>
 
-      {/*  Modal thêm/sửa người dùng */}
+      {/* Modal */}
       <AddUserModal
         open={open}
         setOpen={setOpen}
@@ -83,65 +90,79 @@ export default function UserList() {
         setSelectedUser={setSelectedUser}
       />
 
-      {/*  Bảng hiển thị danh sách người dùng */}
-      <div className="overflow-x-auto">
-        <table className="min-w-full border border-gray-200 rounded-lg overflow-hidden">
-          <thead className="bg-blue-950 text-white uppercase text-sm">
-            <tr className="text-center">
-              <th className="p-3">ID</th>
-              <th className="p-3">Tên</th>
-              <th className="p-3">Email</th>
-              <th className="p-3">Vai trò</th>
-              <th className="p-3">Hành động</th>
-            </tr>
-          </thead>
+      {/* Table Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Danh sách người dùng</CardTitle>
+          <CardDescription>
+            Tổng: {users.length} người dùng
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-16 text-center">ID</TableHead>
+                  <TableHead>Tên</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead className="text-center">Vai trò</TableHead>
+                  <TableHead className="text-center">Hành động</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {users.map((user) => (
+                  <TableRow key={user.id} className="hover:bg-muted/50 transition-colors">
+                    <TableCell className="text-center font-medium">{user.id}</TableCell>
+                    <TableCell className="font-medium">{user.name}</TableCell>
+                    <TableCell className="text-muted-foreground">{user.email}</TableCell>
+                    <TableCell className="text-center">
+                      <Badge
+                        variant={user.role === "admin" ? "default" : "secondary"}
+                        className={
+                          user.role === "admin"
+                            ? "bg-green-100 text-green-800 hover:bg-green-200"
+                            : "bg-gray-100 text-gray-700"
+                        }
+                      >
+                        {user.role}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex justify-center gap-1">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleEdit(user)}
+                          title="Sửa"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="text-destructive hover:text-destructive"
+                          onClick={() => handleDelete(user.id)}
+                          title="Xóa"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
 
-          <tbody className="divide-y divide-gray-100 bg-white">
-            {users.map((user) => (
-              <tr
-                key={user.id}
-                className="text-center hover:bg-gray-100 transition-colors"
-              >
-                <td className="p-3">{user.id}</td>
-                <td className="p-3 font-medium text-gray-800">{user.name}</td>
-                <td className="p-3 text-gray-600">{user.email}</td>
-                <td className="p-3">
-                  <span
-                    className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                      user.role === "admin"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-gray-100 text-gray-600"
-                    }`}
-                  >
-                    {user.role}
-                  </span>
-                </td>
-                <td className="p-3 space-x-2">
-                  <button
-                    onClick={() => handleEdit(user)}
-                    className="bg-yellow-500 hover:bg-yellow-600 text-white py-1 px-3 rounded-md transition"
-                  >
-                    Sửa
-                  </button>
-                  <button
-                    onClick={() => handleDelete(user.id)}
-                    className="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded-md transition"
-                  >
-                    Xóa
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        {/* Trường hợp không có người dùng */}
-        {users.length === 0 && (
-          <p className="text-center text-gray-500 mt-4">
-            Không có người dùng nào.
-          </p>
-        )}
-      </div>
+          {/* Empty State */}
+          {users.length === 0 && (
+            <div className="text-center py-8 text-muted-foreground">
+              <p>Không có người dùng nào.</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

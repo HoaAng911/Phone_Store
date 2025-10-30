@@ -1,3 +1,8 @@
+import { OrderModule } from './order/order.module';
+import { OrderService } from './order/order.service';
+import { CartModule } from './cart/cart.module';
+import { CartService } from './cart/cart.service';
+import { CartController } from './cart/cart.controller';
 import { UploadModule } from './uploads/upload.module';
 import { ProductController } from './product/product.controller';
 import { ProductModule } from './product/product.module';
@@ -15,8 +20,11 @@ import { PhoneSpecification } from './product/entity/phone-specification.entity'
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { AddressEntity } from './user/entity/address.entity';
+import { CartEntity } from './cart/entity/cart.entity';
 @Module({
   imports: [
+        OrderModule, 
+        CartModule, 
        
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'uploads'),
@@ -35,17 +43,19 @@ import { AddressEntity } from './user/entity/address.entity';
         username: config.get('DB_USER'),
         password: config.get('DB_PASS'),
         database: config.get('DB_NAME'),
-        entities: [UserEntity, ProductEntity, ProductImage, PhoneSpecification,AddressEntity],
+        entities: [UserEntity, ProductEntity, ProductImage, PhoneSpecification,AddressEntity,CartEntity],
         synchronize: true,
       }),
     }),
      UploadModule,
     UserModule,
     AuthModule,
-  
+    
   ],
-  controllers: [
+  controllers: [ 
     ProductController, AppController],
-  providers: [AppService],
+  providers: [
+        OrderService, 
+         AppService],
 })
 export class AppModule { }

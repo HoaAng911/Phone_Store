@@ -1,6 +1,4 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+
 import './App.css'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import MainLayout from './layouts/MainLayout'
@@ -10,6 +8,7 @@ import ProductList from './pages/ProductList'
 import AddProductForm from './components/FormCreateProduct/AddProductForm'
 import ProductDetail from './pages/ProductDetail'
 import EditProductForm from './components/FormUpdateProduct/EditProductForm'
+import CartTestPage from './pages/CartPage'
 function App() {
 
 
@@ -23,7 +22,7 @@ function App() {
           <Route path="/products/add" element={<AddProductForm />} />
            <Route path="/products/edit/:id" element={<EditProductForm />} />
           <Route path="/products/:id" element={<ProductDetail />} />
-          
+            <Route path="/carts" element={<CartTestPage />} />
         </Routes>
       </MainLayout>
 

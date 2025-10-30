@@ -3,6 +3,7 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
+  ManyToOne,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
@@ -10,6 +11,7 @@ import {
 } from 'typeorm';
 import { PhoneSpecification } from './phone-specification.entity';
 import { ProductImage } from './product-image.entity';
+import { CartEntity } from 'src/cart/entity/cart.entity';
 
 @Entity('product')
 export class ProductEntity {
@@ -51,7 +53,8 @@ export class ProductEntity {
     onDelete: 'CASCADE',
   })
   images: ProductImage[];
-
+  @OneToMany(()=>CartEntity,(cart)=>cart.product)
+    carts:CartEntity
   /** Thông số kỹ thuật chi tiết */
   @OneToOne(() => PhoneSpecification, (spec) => spec.product, {
     cascade: true,

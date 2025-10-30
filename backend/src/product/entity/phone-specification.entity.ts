@@ -61,9 +61,9 @@ export class PhoneSpecification {
 
   /** Quan hệ 1-1 với sản phẩm */
   @OneToOne(() => ProductEntity, (product) => product.specification, {
-    onDelete: 'CASCADE',
+    
   })
-  @JoinColumn()
+
   product: ProductEntity;
 
   /** Ngày tạo bản ghi */

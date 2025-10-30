@@ -1,16 +1,16 @@
-import React, { useEffect } from "react";
-import { data, useNavigate } from "react-router-dom";
-import useProductStore from "../store/productStore";
+"use client";
 
-/**
- *  Component: ProductList
- * Hiển thị danh sách sản phẩm với các chức năng:
- *  - Xem chi tiết
- *  - Sửa / Xóa
- *  - Phân trang
- */
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import useProductStore from "../store/useProductStore";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Plus, Eye, Edit, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+
 const ProductList = () => {
-  //  Lấy state & action từ Zustand store
   const {
     products,
     fetchProducts,
@@ -23,196 +23,212 @@ const ProductList = () => {
 
   const navigate = useNavigate();
 
-  //  Fetch sản phẩm mỗi khi page thay đổi
   useEffect(() => {
     fetchProducts(page);
-    console.log(products)
   }, [page, fetchProducts]);
 
-  //  Điều hướng tới trang chi tiết sản phẩm
   const handleDetail = (id) => navigate(`/products/${id}`);
-
-  //  Điều hướng tới trang edit sản phẩm
   const handleEdit = (id) => navigate(`/products/edit/${id}`);
+  const handleAddProduct = () => navigate("/products/add");
 
-  //  Xóa sản phẩm
   const handleDelete = async (id) => {
     if (!window.confirm("Bạn có chắc muốn xóa sản phẩm này?")) return;
     try {
       await deleteProduct(id);
       alert("Xóa sản phẩm thành công");
-      fetchProducts(page); // Reload danh sách
+      fetchProducts(page);
     } catch (error) {
       console.error("Lỗi khi xóa sản phẩm:", error);
       alert("Có lỗi xảy ra khi xóa sản phẩm");
     }
   };
 
-  //  Chuyển trang phân trang
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPage) setPage(newPage);
   };
 
-  //  Thêm sản phẩm mới
-  const handleAddProduct = () => navigate("/products/add");
-
-  //  Loading state
+  // Loading Skeleton
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gray-50">
-        <p className="text-lg text-gray-500 animate-pulse font-medium">
-          Đang tải dữ liệu...
-        </p>
+      <div className="min-h-screen bg-background p-6">
+        <div className="max-w-7xl mx-auto space-y-6">
+          <div className="flex justify-between items-center">
+            <Skeleton className="h-9 w-64" />
+            <Skeleton className="h-10 w-32" />
+          </div>
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-7 w-48" />
+              <Skeleton className="h-5 w-32 mt-2" />
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="flex gap-4 items-center">
+                    <Skeleton className="h-12 w-12 rounded-md" />
+                    <Skeleton className="h-4 flex-1" />
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-8 w-24" />
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-5xl mx-auto">
-        <div className="bg-white shadow-lg  overflow-hidden border border-gray-100">
-          {/* Header */}
-          <div className="bg-gray-800 px-6 py-3 flex items-center justify-between">
-            <h1 className="text-xl font-semibold text-white">
-              Danh sách sản phẩm
-            </h1>
-            <button
-              onClick={handleAddProduct}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
-            >
-              Thêm sản phẩm
-            </button>
+    <div className="min-h-screen bg-background p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Quản lý sản phẩm</h1>
+            <p className="text-muted-foreground mt-1">Theo dõi và chỉnh sửa danh mục sản phẩm</p>
           </div>
+          <Button onClick={handleAddProduct} className="gap-2">
+            <Plus className="w-4 h-4" />
+            Thêm sản phẩm
+          </Button>
+        </div>
 
-          {/* Table */}
-          <div className="p-6 overflow-x-auto rounded-lg border border-gray-200">
-            <table className="min-w-full divide-y divide-gray-200 text-sm text-center">
-              <thead className="bg-gray-50 text-gray-600 uppercase text-xs font-medium">
-                <tr>
-                  <th className="px-4 py-3">ID</th>
-                  <th className="px-4 py-3">Ảnh</th>
-                  <th className="px-4 py-3">Tên sản phẩm</th>
-                  <th className="px-4 py-3">Giá</th>
-                  <th className="px-4 py-3">Thương hiệu</th>
-                  <th className="px-4 py-3">Kho</th>
-                  <th className="px-4 py-3">Hành động</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {products.data?.map((p) => (
-                  <tr
-                    key={p.id}
-                    className="hover:bg-gray-50 transition-all duration-200"
-                  >
-                    <td className="px-4 py-4 font-medium text-gray-700">{p.id}</td>
+        {/* Table Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Danh sách sản phẩm</CardTitle>
+            <CardDescription>
+              Tổng: {products.data?.length || 0} sản phẩm (Trang {page}/{totalPage})
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-16">ID</TableHead>
+                    <TableHead className="w-20">Ảnh</TableHead>
+                    <TableHead>Tên sản phẩm</TableHead>
+                    <TableHead>Giá</TableHead>
+                    <TableHead>Thương hiệu</TableHead>
+                    <TableHead>Kho</TableHead>
+                    <TableHead className="text-center">Hành động</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {products.data?.map((p) => (
+                    <TableRow key={p.id} className="hover:bg-muted/50 transition-colors">
+                      <TableCell className="font-medium">{p.id}</TableCell>
 
-                    {/* Ảnh sản phẩm */}
-                    <td className="px-4 py-4">
-                      {p.images?.length ? (
-                        <img
-                          src={p.images[0].url}
-                          alt={p.name}
-                          className="w-12 h-12 object-contain mx-auto rounded-md border border-gray-100"
-                        />
-                      ) : (
-                        <div className="w-12 h-12 bg-gray-100 flex items-center justify-center text-gray-500 text-xs mx-auto rounded-md">
-                          No Image
+                      {/* Ảnh */}
+                      <TableCell>
+                        {p.images?.length > 0 ? (
+                          <img
+                            src={p.images[0].url}
+                            alt={p.name}
+                            className="w-12 h-12 object-contain rounded-md border"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 bg-muted flex items-center justify-center rounded-md text-xs text-muted-foreground">
+                            No Image
+                          </div>
+                        )}
+                      </TableCell>
+
+                      <TableCell className="font-medium">{p.name}</TableCell>
+
+                      {/* Giá */}
+                      <TableCell className="font-semibold text-foreground">
+                        {p.price?.toLocaleString("vi-VN")}₫
+                      </TableCell>
+
+                      <TableCell className="text-muted-foreground">{p.brand}</TableCell>
+
+                      {/* Kho */}
+                      <TableCell>
+                        <Badge
+                          variant={p.stock > 0 ? "default" : "destructive"}
+                          className={p.stock > 0 ? "bg-green-100 text-green-800 hover:bg-green-200" : ""}
+                        >
+                          {p.stock > 0 ? `Còn hàng (${p.stock})` : "Hết hàng"}
+                        </Badge>
+                      </TableCell>
+
+                      {/* Hành động */}
+                      <TableCell>
+                        <div className="flex justify-center gap-1">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleDetail(p.id)}
+                            title="Xem chi tiết"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleEdit(p.id)}
+                            title="Chỉnh sửa"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-destructive hover:text-destructive"
+                            onClick={() => handleDelete(p.id)}
+                            title="Xóa"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
                         </div>
-                      )}
-                    </td>
-
-                    <td className="px-4 py-4 text-gray-800 font-medium">{p.name}</td>
-
-                    {/* Giá sản phẩm */}
-                    <td className="px-4 py-4 text-gray-700 font-semibold">
-                      {p.price?.toLocaleString("vi-VN")}₫
-                    </td>
-
-                    <td className="px-4 py-4 text-gray-600">{p.brand}</td>
-
-                    {/* Trạng thái kho */}
-                    <td className="px-4 py-4">
-                      <span
-                        className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
-                          p.stock > 0
-                            ? "bg-green-100 text-green-700"
-                            : "bg-red-100 text-red-600"
-                        }`}
-                      >
-                        {p.stock > 0 ? `Còn hàng (${p.stock})` : "Hết hàng"}
-                      </span>
-                    </td>
-
-                    {/* Hành động */}
-                    <td className="px-4 py-4">
-                      <div className="flex justify-center gap-2">
-                        <button
-                          className="px-3 py-1 bg-blue-600 text-white rounded-md text-xs font-medium hover:bg-blue-700 transition"
-                          onClick={() => handleDetail(p.id)}
-                        >
-                          Xem
-                        </button>
-                        <button
-                          className="px-3 py-1 bg-gray-600 text-white rounded-md text-xs font-medium hover:bg-gray-700 transition"
-                          onClick={() => handleEdit(p.id)}
-                        >
-                          Sửa
-                        </button>
-                        <button
-                          className="px-3 py-1 bg-red-600 text-white rounded-md text-xs font-medium hover:bg-red-700 transition"
-                          onClick={() => handleDelete(p.id)}
-                        >
-                          Xóa
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
 
             {/* Phân trang */}
-            <div className="mt-6 flex justify-center items-center gap-2">
-              <button
-                onClick={() => handlePageChange(page - 1)}
-                disabled={page === 1}
-                className={`px-3 py-1 border rounded-md text-sm font-medium ${
-                  page === 1
-                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                    : "bg-white text-gray-600 hover:bg-gray-100"
-                } transition`}
-              >
-                Prev
-              </button>
-
-              {Array.from({ length: totalPage }, (_, i) => (
-                <button
-                  key={i}
-                  onClick={() => handlePageChange(i + 1)}
-                  className={`px-3 py-1 border rounded-md text-sm font-medium ${
-                    page === i + 1
-                      ? "bg-blue-600 text-white"
-                      : "bg-white text-gray-600 hover:bg-gray-100"
-                  } transition`}
+            {totalPage > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-6">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(page - 1)}
+                  disabled={page === 1}
                 >
-                  {i + 1}
-                </button>
-              ))}
+                  <ChevronLeft className="w-4 h-4" />
+                  Prev
+                </Button>
 
-              <button
-                onClick={() => handlePageChange(page + 1)}
-                disabled={page === totalPage}
-                className={`px-3 py-1 border rounded-md text-sm font-medium ${
-                  page === totalPage
-                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                    : "bg-white text-gray-600 hover:bg-gray-100"
-                } transition`}
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        </div>
+                {Array.from({ length: totalPage }, (_, i) => (
+                  <Button
+                    key={i}
+                    variant={page === i + 1 ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handlePageChange(i + 1)}
+                  >
+                    {i + 1}
+                  </Button>
+                ))}
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(page + 1)}
+                  disabled={page === totalPage}
+                >
+                  Next
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

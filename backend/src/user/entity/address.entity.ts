@@ -9,6 +9,7 @@ import {
   IsString,
 } from 'class-validator';
 import { UserEntity } from './user.entity';
+import { OrderEntity } from 'src/order/entity/order.entity';
 
 @Entity('addresses')
 export class AddressEntity {
@@ -40,7 +41,6 @@ export class AddressEntity {
   @IsBoolean()
   @Column({ default: true })
   isDefault: boolean;
-
   /** Quan hệ n-1: nhiều địa chỉ thuộc về một user */
   @ManyToOne(() => UserEntity, (user) => user.addresses, {
     onDelete: 'CASCADE',

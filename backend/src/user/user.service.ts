@@ -13,12 +13,12 @@ export class UserService {
     private readonly userRepo: Repository<UserEntity>,
   ) {}
 
-  // 🔹 Lấy tất cả user
+  //  Lấy tất cả user
   findAll(): Promise<UserEntity[]> {
     return this.userRepo.find();
   }
 
-  // 🔹 Lấy 1 user theo id
+  //  Lấy 1 user theo id
   async findOne(id: number): Promise<UserEntity> {
     const user = await this.userRepo.findOne({ where: { id } });
     if (!user) {
@@ -27,7 +27,7 @@ export class UserService {
     return user;
   }
 
-  // 🔹 Tạo user mới (hash mật khẩu nếu có)
+  //  Tạo user mới (hash mật khẩu nếu có)
   async create(data: CreateUserDto): Promise<UserEntity> {
     const user = this.userRepo.create({
       ...data,
@@ -36,7 +36,7 @@ export class UserService {
     return this.userRepo.save(user);
   }
 
-  // 🔹 Cập nhật user
+  //  Cập nhật user
   async update(id: number, data: UpdateUserDto): Promise<UserEntity> {
     const user = await this.findOne(id);
     const updatedUser = {
@@ -47,26 +47,26 @@ export class UserService {
     return this.userRepo.save(updatedUser);
   }
 
-  // 🔹 Xóa user
+  //  Xóa user
   async remove(id: number): Promise<{ message: string }> {
     const user = await this.findOne(id);
     await this.userRepo.remove(user);
     return { message: `Đã xóa user có id = ${id}` };
   }
 
-  // 🔹 Thống kê user
+  //  Thống kê user
   async getUserStats() {
     const total = await this.userRepo.count();
     const admin = await this.userRepo.count({ where: { role: 'admin' } });
     return { total, admin };
   }
 
-  // 🔹 Tìm theo email
+  //  Tìm theo email
   findByEmail(email: string): Promise<UserEntity | null> {
     return this.userRepo.findOne({ where: { email } });
   }
 
-  // 🔹 Kiểm tra email đã tồn tại chưa
+  //  Kiểm tra email đã tồn tại chưa
   async isEmailTaken(email: string): Promise<boolean> {
     const user = await this.findByEmail(email);
     return Boolean(user);

@@ -1,4 +1,9 @@
+'use client';
+
 import React from 'react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const SpecificationFields = ({ specification, setSpecification }) => {
   const fields = [
@@ -19,20 +24,32 @@ const SpecificationFields = ({ specification, setSpecification }) => {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-      {fields.map(f => (
-        <div key={f.key}>
-          <label className="block text-sm font-medium text-gray-600 mb-1">{f.label}</label>
-          <input
-            type="text"
-            value={specification[f.key]}
-            onChange={e => handleChange(f.key, e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all duration-200"
-            placeholder={`Nhập ${f.label.toLowerCase()}`}
-          />
+    <Card className="border-gray-200">
+      <CardHeader>
+        <CardTitle className="text-lg font-semibold text-gray-800">
+          Thông số kỹ thuật
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {fields.map(f => (
+            <div key={f.key} className="space-y-1">
+              <Label htmlFor={f.key} className="text-sm font-medium">
+                {f.label}
+              </Label>
+              <Input
+                id={f.key}
+                type="text"
+                value={specification[f.key] || ''}
+                onChange={(e) => handleChange(f.key, e.target.value)}
+                placeholder={`Nhập ${f.label.toLowerCase()}`}
+                className="transition-all duration-200"
+              />
+            </div>
+          ))}
         </div>
-      ))}
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 

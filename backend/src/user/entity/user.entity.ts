@@ -5,6 +5,8 @@ import {
   OneToMany,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToOne,
+  ManyToOne,
 } from 'typeorm';
 import {
   IsEmail,
@@ -13,6 +15,8 @@ import {
   IsString,
 } from 'class-validator';
 import { AddressEntity } from './address.entity';
+import { CartEntity } from 'src/cart/entity/cart.entity';
+import { OrderEntity } from 'src/order/entity/order.entity';
 
 @Entity('users')
 export class UserEntity {
@@ -44,8 +48,11 @@ export class UserEntity {
   /** Quan hệ 1-nhiều: 1 user có thể có nhiều địa chỉ */
   @OneToMany(() => AddressEntity, (address) => address.user)
   addresses: AddressEntity[];
-
+  @OneToOne(()=>CartEntity,(cart)=>cart.user)
+  cart:CartEntity
   /** Vai trò người dùng (user hoặc admin) */
+  @ManyToOne(()=>OrderEntity,(orders)=>orders.user)
+  orders:OrderEntity
   @Column({ default: 'user' })
   role: string;
 

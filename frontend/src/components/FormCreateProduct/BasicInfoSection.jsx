@@ -1,63 +1,92 @@
-import React from 'react';
+'use client';
 
-const BasicInfoSection = ({ form, setForm }) => (
-  <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
-    <h3 className="text-lg font-semibold text-gray-800 mb-4">Thông tin cơ bản</h3>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div>
-        <label className="block text-sm font-medium text-gray-600 mb-1">Tên sản phẩm <span className="text-red-500">*</span></label>
-        <input
-          type="text"
-          value={form.name}
-          onChange={e => setForm({ ...form, name: e.target.value })}
-          className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all duration-200"
-          placeholder="Nhập tên sản phẩm"
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-600 mb-1">Thương hiệu <span className="text-red-500">*</span></label>
-        <input
-          type="text"
-          value={form.brand}
-          onChange={e => setForm({ ...form, brand: e.target.value })}
-          className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all duration-200"
-          placeholder="Nhập thương hiệu"
-        />
-      </div>
-    </div>
-    <div className="mt-4">
-      <label className="block text-sm font-medium text-gray-600 mb-1">Mô tả</label>
-      <textarea
-        value={form.description}
-        onChange={e => setForm({ ...form, description: e.target.value })}
-        className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all duration-200"
-        rows="4"
-        placeholder="Nhập mô tả sản phẩm"
-      />
-    </div>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-      <div>
-        <label className="block text-sm font-medium text-gray-600 mb-1">Giá (VNĐ) <span className="text-red-500">*</span></label>
-        <input
-          type="number"
-          value={form.price}
-          onChange={e => setForm({ ...form, price: e.target.value })}
-          className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all duration-200"
-          placeholder="Nhập giá sản phẩm"
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-600 mb-1">Tồn kho</label>
-        <input
-          type="number"
-          value={form.stock}
-          onChange={e => setForm({ ...form, stock: e.target.value })}
-          className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all duration-200"
-          placeholder="Nhập số lượng tồn kho"
-        />
-      </div>
-    </div>
-  </div>
-);
+import React from 'react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
+const BasicInfoSection = ({ form, setForm }) => {
+  return (
+    <Card className="border-gray-200">
+      <CardHeader>
+        <CardTitle className="text-lg font-semibold text-gray-800">
+          Thông tin cơ bản
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-1">
+            <Label htmlFor="name">
+              Tên sản phẩm <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="name"
+              type="text"
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              placeholder="Nhập tên sản phẩm"
+              className="transition-all duration-200"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <Label htmlFor="brand">
+              Thương hiệu <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="brand"
+              type="text"
+              value={form.brand}
+              onChange={(e) => setForm({ ...form, brand: e.target.value })}
+              placeholder="Nhập thương hiệu"
+              className="transition-all duration-200"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-1">
+          <Label htmlFor="description">Mô tả</Label>
+          <Textarea
+            id="description"
+            value={form.description}
+            onChange={(e) => setForm({ ...form, description: e.target.value })}
+            placeholder="Nhập mô tả sản phẩm"
+            rows={4}
+            className="resize-none transition-all duration-200"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-1">
+            <Label htmlFor="price">
+              Giá (VNĐ) <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="price"
+              type="number"
+              value={form.price}
+              onChange={(e) => setForm({ ...form, price: e.target.value })}
+              placeholder="Nhập giá sản phẩm"
+              className="transition-all duration-200"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <Label htmlFor="stock">Tồn kho</Label>
+            <Input
+              id="stock"
+              type="number"
+              value={form.stock}
+              onChange={(e) => setForm({ ...form, stock: e.target.value })}
+              placeholder="Nhập số lượng tồn kho"
+              className="transition-all duration-200"
+            />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
 
 export default BasicInfoSection;

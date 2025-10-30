@@ -16,31 +16,31 @@ import { UpdateUserDto } from './dto/update-user.dto';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  // 🔹 Lấy tất cả user
+  //  Lấy tất cả user
   @Get()
   getAll() {
     return this.userService.findAll();
   }
 
-  // 🔹 Lấy thống kê (tổng số user, số admin)
+  //  Lấy thống kê (tổng số user, số admin)
   @Get('stats')
   getStats() {
     return this.userService.getUserStats();
   }
 
-  // 🔹 Lấy chi tiết 1 user theo ID
+  //  Lấy chi tiết 1 user theo ID
   @Get(':id')
   getOne(@Param('id', ParseIntPipe) id: number) {
     return this.userService.findOne(id);
   }
 
-  // 🔹 Tạo user mới
+  //  Tạo user mới
   @Post()
   create(@Body() data: CreateUserDto) {
     return this.userService.create(data);
   }
 
-  // 🔹 Cập nhật user
+  //  Cập nhật user
   @Put(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -49,7 +49,7 @@ export class UserController {
     return this.userService.update(id, data);
   }
 
-  // 🔹 Xóa user
+  //  Xóa user
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.userService.remove(id);
