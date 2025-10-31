@@ -21,9 +21,9 @@ export class ProductService {
     @InjectRepository(ProductImage)
     private readonly imageRepo: Repository<ProductImage>,
 
-    @InjectRepository(PhoneSpecification)
+    @InjectRepository(PhoneSpecification) 
     private readonly specRepo: Repository<PhoneSpecification>,
-  ) {}
+  ) { }
 
   /**
    *  Tạo sản phẩm mới

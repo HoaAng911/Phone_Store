@@ -21,9 +21,11 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { AddressEntity } from './user/entity/address.entity';
 import { CartEntity } from './cart/entity/cart.entity';
+import { OrderEntity } from './order/entity/order.entity';
+import { OrderItemEntity } from './order/entity/order-item.entity';
 @Module({
   imports: [
-        OrderModule, 
+     
         CartModule, 
        
     ServeStaticModule.forRoot({
@@ -43,19 +45,20 @@ import { CartEntity } from './cart/entity/cart.entity';
         username: config.get('DB_USER'),
         password: config.get('DB_PASS'),
         database: config.get('DB_NAME'),
-        entities: [UserEntity, ProductEntity, ProductImage, PhoneSpecification,AddressEntity,CartEntity],
+        entities: [UserEntity, ProductEntity, ProductImage, PhoneSpecification,AddressEntity,CartEntity,OrderEntity,OrderItemEntity],
         synchronize: true,
       }),
     }),
      UploadModule,
     UserModule,
     AuthModule,
+    OrderModule
     
   ],
   controllers: [ 
     ProductController, AppController],
   providers: [
-        OrderService, 
+        
          AppService],
 })
 export class AppModule { }

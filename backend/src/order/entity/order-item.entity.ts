@@ -9,8 +9,8 @@ export class OrderItemEntity {
   id: number
   @ManyToOne(() => ProductEntity)
   product: ProductEntity
-  @ManyToOne(() => OrderEntity)
-  order: ProductEntity
+  @ManyToOne(() => OrderEntity,(order)=>order.items,{onDelete:'CASCADE'})
+  order: OrderEntity
   @Column()
   quantity:number
   @Column({type:'int'})

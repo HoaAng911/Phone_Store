@@ -1,3 +1,4 @@
+// src/user/entity/address.entity.ts
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -5,43 +6,57 @@ import {
   ManyToOne,
 } from 'typeorm';
 import {
-  IsBoolean,
   IsString,
+  IsBoolean,
+  IsOptional,
 } from 'class-validator';
 import { UserEntity } from './user.entity';
-import { OrderEntity } from 'src/order/entity/order.entity';
 
 @Entity('addresses')
 export class AddressEntity {
-  /** Khóa chính tự tăng */
   @PrimaryGeneratedColumn()
   id: number;
 
-  /** Đường phố */
-  @IsString({ message: 'Đường phố phải là chuỗi ký tự' })
+  // === BẮT BUỘC ===
+  @IsString({ message: 'Họ tên không được để trống' })
+  @Column()
+  fullName: string;
+
+  @IsString({ message: 'Số điện thoại không được để trống' })
+  @Column()
+  phone: string;
+
+  @IsString({ message: 'Đường không được để trống' })
   @Column()
   street: string;
 
-  /** Thành phố */
-  @IsString({ message: 'Thành phố phải là chuỗi ký tự' })
+  @IsString({ message: 'Thành phố không được để trống' })
   @Column()
   city: string;
 
-  /** Quốc gia */
-  @IsString({ message: 'Quốc gia phải là chuỗi ký tự' })
+  @IsString({ message: 'Quận không được để trống' })
   @Column()
+  district: string;
+
+  @IsString({ message: 'Phường không được để trống' })
+  @Column()
+  ward: string;
+
+  // === TÙY CHỌN ===
+  @IsString()
+  @Column({ default: 'Việt Nam' })
   country: string;
 
-  /** Mã bưu điện */
-  @IsString({ message: 'Mã bưu điện phải là chuỗi ký tự' })
-  @Column()
-  postalCode: string;
+  @IsString()
+  @IsOptional()
+  @Column({ nullable: true })
+  postalCode?: string;
 
-  /** Có phải địa chỉ mặc định hay không */
   @IsBoolean()
-  @Column({ default: true })
+  @Column({ type: 'boolean', default: false })
   isDefault: boolean;
-  /** Quan hệ n-1: nhiều địa chỉ thuộc về một user */
+
+  // === QUAN HỆ ===
   @ManyToOne(() => UserEntity, (user) => user.addresses, {
     onDelete: 'CASCADE',
   })
