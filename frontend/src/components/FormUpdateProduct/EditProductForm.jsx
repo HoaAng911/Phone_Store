@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronDown, ChevronUp, ArrowLeft } from 'lucide-react';
-import useProductStore from '../../store/useproductStore';
+import useProductStore from '../../store/useProduct';
 import BasicInfoSection from './BasicInfoSection';
 import ImageUpload from './ImageUpload';
 import SpecificationSection from './SpecificationSection';

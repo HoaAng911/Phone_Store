@@ -1,30 +1,26 @@
-import { IsArray, IsNumber, IsOptional, IsString, ValidateNested } from "class-validator";
+import { IsArray, IsEnum, IsNumber, IsOptional, IsString, Max, Min, ValidateNested } from "class-validator";
 import { Type } from 'class-transformer';
 import { ImageDto } from "./image.dto";
+import { PhoneSpecificationDto } from "./phone-Specification.dto";
 
-export class PhoneSpecificationDto {
-  @IsOptional() @IsString() screenSize?: string;
-  @IsOptional() @IsString() resolution?: string;
-  @IsOptional() @IsString() cpu?: string;
-  @IsOptional() @IsString() ram?: string;
-  @IsOptional() @IsString() storage?: string;
-  @IsOptional() @IsString() battery?: string;
-  @IsOptional() @IsString() os?: string;
-  @IsOptional() @IsString() camera?: string;
-  @IsOptional() @IsString() sim?: string;
-  @IsOptional() @IsString() weight?: string;
-  @IsOptional() 
-  @IsArray() 
-  @IsString({ each: true }) 
-  colors?: string[];
+export enum ProductCategory {
+  PHONE = 'phone',
+  LAPTOP = 'laptop',
+  TABLET = 'tablet',
+  ACCESSORIES = 'accessories'
 }
 
 export class CreateProductDto {
-  @IsString() name: string;
+  @IsString({ message: 'Ten san pham la bat buoc' }) name: string;
   @IsString() description: string;
-  @IsNumber() price: number;
+  @IsNumber() @Min(0) price: number;
+  @IsOptional() @IsNumber() @Min(0) originalPrice?: number
+  @IsOptional() @IsNumber() @Min(0) @Max(100) discountPercent?: number
   @IsString() brand: string;
-  @IsOptional() @IsNumber() stock?: number;
+
+  @IsOptional() @IsNumber() @Min(0) stock?: number;
+  @IsString() sku: string
+  @IsOptional() @IsEnum(ProductCategory) category?:ProductCategory
 
   @IsOptional()
   @IsArray()

@@ -1,29 +1,40 @@
-import { Type } from "class-transformer"
-import { IsInt, Min } from "class-validator"
-
+// src/cart/dto/create-cart.dto.ts
+import { Type } from 'class-transformer';
+import {
+  IsInt,
+  IsOptional,
+  IsPositive,
+  IsString,
+  Matches,
+  Min,
+  ValidateNested,
+} from 'class-validator';
 
 export class CreateCartDto {
-  @IsInt({ message: 'User phai la so nguyen' })
+  // userId do JWT tự động inject → không cần trong DTO
+  // Nếu cần: dùng @IsString() + regex
+
+  @IsString({ message: 'productId phải là chuỗi' })
+  @Matches(/^\d+$/, { message: 'productId phải là số nguyên dương' })
+  @Type(() => String)
+  productId: string;
+
+  @IsInt({ message: 'quantity phải là số nguyên' })
+  @Min(1, { message: 'quantity phải lớn hơn hoặc bằng 1' })
   @Type(() => Number)
-  userId: number
-  @IsInt({ message: 'User phai la so nguyen' })
-  @Type(() => Number)
-  productId: number
-  @IsInt({ message: 'User phai la so nguyen' })
-  @Min(1,{message:"quantity phai lon hon = 1"})
-  @Type(() => Number)
-  quantity: number
+  quantity?: number = 1;
 }
 
+// Nếu cần update
 export class UpdateCartDto {
-  @IsInt({ message: 'User phai la so nguyen' })
+   
+  @IsString({ message: 'productId phải là chuỗi' })
+  @Matches(/^\d+$/, { message: 'productId phải là số nguyên dương' })
+  @Type(() => String)
+  productId: string;
+  @IsOptional()
+  @IsInt({ message: 'quantity phải là số nguyên' })
+  @Min(1, { message: 'quantity phải lớn hơn hoặc bằng 1' })
   @Type(() => Number)
-  userId: number
-  @IsInt({ message: 'User phai la so nguyen' })
-  @Type(() => Number)
-  productId: number
-  @IsInt({ message: 'User phai la so nguyen' })
-  @Min(1,{message:"quantity phai lon hon = 1"})
-  @Type(() => Number)
-  quantity: number
+  quantity?: number;
 }

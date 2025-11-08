@@ -10,29 +10,29 @@ import { CartEntity } from './entity/cart.entity';
 @Controller('cart')
 export class CartController {
 constructor(private readonly cartService:CartService){}
-@Post()
-async addToCart(@Body()CreateCartDto:CreateCartDto):Promise<CartEntity>{
-return await this.cartService.addToCart(CreateCartDto)
+@Post(':userId')
+async addToCart(@Param('userId')userId:string,@Body()CreateCartDto:CreateCartDto):Promise<CartEntity>{
+return await this.cartService.addToCart(userId,CreateCartDto)
 }
-@Patch()
-async updateCartItem(@Body()UpdateCartDto:UpdateCartDto):Promise<CartEntity>{
-return await this.cartService.updateCartItem(UpdateCartDto)
+@Patch(':userId')
+async updateCartItem(@Body()userId:string,UpdateCartDto:UpdateCartDto):Promise<CartEntity>{
+return await this.cartService.updateCartItem(userId,UpdateCartDto)
 }
 @Delete(':userId/:productId')
-async removeFormCart(@Param('userId')userId:number,@Param('productId')productId:number):Promise<void>{
-return await this.cartService.removeFormCart(userId,productId)
+async removeFormCart(@Param('userId')userId:string,@Param('productId')productId:string):Promise<void>{
+return await this.cartService.removeFromCart(userId,productId)
 }
 @Get(':userId')
-async getCartById(@Param('userId') userId:number):Promise<CartEntity[]>{
+async getCartById(@Param('userId') userId:string):Promise<CartEntity[]>{
   return await this.cartService.getCartByUserId(userId)
 }
 @Get(':userId/total')
-async caculateCartTotal (@Param('userId')userId:number):Promise<{total:number}>{
+async caculateCartTotal (@Param('userId')userId:string):Promise<{total:number}>{
  const total =  await this.cartService.calculateCartTotal(userId)
  return {total}
 }
 @Delete(':userId')
-async clearCart(@Param('userId')userId:number):Promise<void>{
+async clearCart(@Param('userId')userId:string):Promise<void>{
   return await this.cartService.clearCart(userId)
 }
 }

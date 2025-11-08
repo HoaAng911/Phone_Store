@@ -1,18 +1,19 @@
+// ProductDetail.jsx – ĐÃ SỬA + HIỂN THỊ ĐẦY ĐỦ
 import React, { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import useProductStore from "../store/useProductStore";
+import useProductStore from "../store/useProduct";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, Image as ImageIcon } from "lucide-react";
+import { ArrowLeft, Image as ImageIcon, Percent } from "lucide-react";
 
 const ProductDetail = () => {
   const { id } = useParams();
   const { product, fetchProductById, loading } = useProductStore();
 
   useEffect(() => {
-    fetchProductById(id);
+    if (id) fetchProductById(id);
   }, [id, fetchProductById]);
 
   if (loading || !product) {
@@ -43,7 +44,6 @@ const ProductDetail = () => {
     );
   }
 
-  // Specs data (giữ nguyên logic)
   const specs = [
     { label: "Màn hình", value: product.specification?.screenSize || "Không có" },
     { label: "Độ phân giải", value: product.specification?.resolution || "Không có" },
@@ -85,9 +85,17 @@ const ProductDetail = () => {
           <CardHeader className="bg-muted/50 border-b-0">
             <div className="flex items-center justify-between">
               <CardTitle>ID: #{product.id}</CardTitle>
-              <Badge variant="secondary" className="text-xs">
-                {product.images?.length || 0} ảnh
-              </Badge>
+              <div className="flex gap-2">
+                <Badge variant="secondary" className="text-xs">
+                  {product.images?.length || 0} ảnh
+                </Badge>
+                {product.discountPercent > 0 && (
+                  <Badge variant="destructive" className="text-xs">
+                    <Percent className="w-3 h-3 mr-1" />
+                    -{product.discountPercent}%
+                  </Badge>
+                )}
+              </div>
             </div>
           </CardHeader>
           <CardContent className="p-0">
@@ -102,7 +110,7 @@ const ProductDetail = () => {
                       className="w-full max-w-md h-64 object-contain rounded-lg shadow-md border"
                     />
                   ) : (
-                    <div className="w-full max-w-md h-64 bg-muted flex items-center justify-center rounded-lg text-muted-foreground">
+                    <div className="w-full max-w-md h-64 bg-muted flex flex-col items-center justify-center rounded-lg text-muted-foreground">
                       <ImageIcon className="w-16 h-16" />
                       <p className="mt-2 text-sm">No Image</p>
                     </div>
@@ -119,7 +127,7 @@ const ProductDetail = () => {
                       {product.name}
                     </h2>
                     <p className="text-muted-foreground leading-relaxed">
-                      {product.description}
+                      {product.description || "Chưa có mô tả"}
                     </p>
                   </div>
 
@@ -130,15 +138,32 @@ const ProductDetail = () => {
                       <p className="text-3xl font-bold text-green-700">
                         {product.price?.toLocaleString("vi-VN")}₫
                       </p>
+                      {product.originalPrice > product.price && (
+                        <p className="text-sm text-muted-foreground line-through mt-1">
+                          {product.originalPrice?.toLocaleString("vi-VN")}₫
+                        </p>
+                      )}
                     </CardContent>
                   </Card>
 
-                  {/* Brand & Stock Cards */}
+                  {/* Brand, SKU, Category, Stock */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Card>
                       <CardContent className="p-4">
                         <p className="text-sm text-muted-foreground mb-2">Thương hiệu</p>
                         <p className="font-semibold text-foreground">{product.brand}</p>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent className="p-4">
+                        <p className="text-sm text-muted-foreground mb-2">Mã SKU</p>
+                        <p className="font-mono text-sm">{product.sku}</p>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent className="p-4">
+                        <p className="text-sm text-muted-foreground mb-2">Danh mục</p>
+                        <p className="capitalize">{product.category}</p>
                       </CardContent>
                     </Card>
                     <Card>
@@ -174,7 +199,7 @@ const ProductDetail = () => {
                       <p className="text-xs text-muted-foreground font-medium mb-1">
                         {spec.label}
                       </p>
-                      <p className="text-sm font-medium text-foreground">
+                      <p className="text-sm font-medium text-foreground break-words">
                         {spec.value}
                       </p>
                     </CardContent>

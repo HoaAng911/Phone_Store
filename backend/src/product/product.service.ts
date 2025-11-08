@@ -112,10 +112,10 @@ export class ProductService {
   /**
    *  Lấy chi tiết sản phẩm theo ID
    */
-  async findOne(id: number): Promise<ProductEntity> {
-    if (!id || isNaN(id) || id <= 0) {
-      throw new NotFoundException('ID sản phẩm không hợp lệ');
-    }
+  async findOne(id: string): Promise<ProductEntity> {
+    if (!id || !/^\d+$/.test(id)) {
+    throw new NotFoundException('ID sản phẩm không hợp lệ');
+  }
 
     const product = await this.productRepo.findOne({
       where: { id },
@@ -132,7 +132,7 @@ export class ProductService {
   /**
    *  Cập nhật thông tin sản phẩm
    */
-  async update(id: number, updateProductDto: UpdateProductDto): Promise<ProductEntity> {
+  async update(id: string, updateProductDto: UpdateProductDto): Promise<ProductEntity> {
     const product = await this.findOne(id);
     const { images, specification, ...updateData } = updateProductDto;
 
@@ -159,7 +159,7 @@ export class ProductService {
   /**
    *  Xóa sản phẩm
    */
-  async remove(id: number): Promise<{ message: string }> {
+  async remove(id: string): Promise<{ message: string }> {
     const product = await this.findOne(id);
 
     if (product.images?.length) {
@@ -178,7 +178,7 @@ export class ProductService {
   /**
    * Kiểm tra sản phẩm tồn tại
    */
-  async exists(id: number): Promise<boolean> {
+  async exists(id: string): Promise<boolean> {
     return await this.productRepo.exists({ where: { id } });
   }
 

@@ -9,7 +9,7 @@ export class UpdateUserDto {
   /** Tên người dùng */
   @IsOptional()
   @IsString({ message: 'Tên phải là chuỗi ký tự' })
-  name?: string;
+  username?: string;
 
   /** Email người dùng */
   @IsOptional()

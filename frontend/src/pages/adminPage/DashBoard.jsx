@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import useUserStore from "../store/userStore";
-import useProductStore from "../store/useProductStore";
+import useUserStore from "../store/useUserStore";
+import useProductStore from "../store/useProduct";
 import DashboardCharts from "./DashBoardChart";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";

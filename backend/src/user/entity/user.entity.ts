@@ -7,9 +7,12 @@ import {
   UpdateDateColumn,
   OneToOne,
   ManyToOne,
+  JoinColumn,
+  Index,
 } from 'typeorm';
 import {
   IsEmail,
+  IsIn,
   IsOptional,
   IsPhoneNumber,
   IsString,
@@ -19,42 +22,43 @@ import { CartEntity } from 'src/cart/entity/cart.entity';
 import { OrderEntity } from 'src/order/entity/order.entity';
 
 @Entity('users')
+@Index(['phoneNumber'])
 export class UserEntity {
-  /** Khóa chính tự tăng */
-  @PrimaryGeneratedColumn()
-  id: number;
 
-  /** Tên người dùng */
+  @PrimaryGeneratedColumn({type:'bigint'})
+  id: string;
+
   @IsString({ message: 'Tên phải là chuỗi ký tự' })
-  @Column()
-  name: string;
+  @Column({ length: 100 })
+  username: string;
 
-  /** Email người dùng — duy nhất */
   @IsEmail({}, { message: 'Email không hợp lệ' })
-  @Column({ unique: true })
+  @Column({ unique: true, length: 255 })
   email: string;
 
-  /** Mật khẩu (đã hash) */
   @IsString({ message: 'Mật khẩu phải là chuỗi ký tự' })
-  @Column()
+  @Column({ select: false })
   password: string;
 
-  /** Số điện thoại — không bắt buộc */
   @IsOptional()
   @IsPhoneNumber('VN', { message: 'Số điện thoại không hợp lệ' })
-  @Column({ nullable: true })
+  @Column({ nullable: true, length: 20 })
   phoneNumber?: string;
 
   /** Quan hệ 1-nhiều: 1 user có thể có nhiều địa chỉ */
   @OneToMany(() => AddressEntity, (address) => address.user)
   addresses: AddressEntity[];
-  @OneToOne(()=>CartEntity,(cart)=>cart.user)
-  cart:CartEntity
+  @OneToOne(() => CartEntity, (cart) => cart.user, { cascade: true, onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'cartId' })
+  cart: CartEntity;
+
+
   /** Vai trò người dùng (user hoặc admin) */
-  @ManyToOne(()=>OrderEntity,(orders)=>orders.user)
-  orders:OrderEntity
-  @Column({ default: 'user' })
-  role: string;
+  @OneToMany(() => OrderEntity, (orders) => orders.user, { cascade: false, eager: false })
+  orders: OrderEntity;
+  @IsIn(['user', 'admin'], { message: 'Vai trò phải là user hoặc admin' })
+  @Column({ type: 'enum', enum: ['user', 'admin'], default: 'user' })
+  role: 'user' | 'admin';
 
   /** Lần đăng nhập gần nhất */
   @IsOptional()

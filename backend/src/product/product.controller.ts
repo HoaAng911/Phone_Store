@@ -49,7 +49,7 @@ export class ProductController {
    *  Lấy chi tiết 1 sản phẩm theo ID
    */
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
+  findOne(@Param('id', ParseIntPipe) id: string) {
     return this.productService.findOne(id);
   }
 
@@ -58,7 +58,7 @@ export class ProductController {
    */
   @Patch(':id')
   update(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseIntPipe) id: string,
     @Body() dto: UpdateProductDto,
   ) {
     return this.productService.update(id, dto);
@@ -68,7 +68,7 @@ export class ProductController {
    *  Xóa sản phẩm
    */
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
+  remove(@Param('id', ParseIntPipe) id: string) {
     return this.productService.remove(id);
   }
 }

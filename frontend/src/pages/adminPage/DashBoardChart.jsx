@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import useProductStore from "../store/useProductStore";
+import useProductStore from "../store/useProduct";
 import {
   BarChart,
   Bar,

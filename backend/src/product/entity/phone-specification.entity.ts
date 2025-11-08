@@ -12,8 +12,8 @@ import { ProductEntity } from './product.entity';
 @Entity('phone_specification')
 export class PhoneSpecification {
   /** Mã thông số kỹ thuật (tự sinh) */
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn({ type: 'bigint' })
+  id: string;
 
   /** Kích thước màn hình (inch) */
   @Column({ type: 'varchar', length: 100, nullable: true })
@@ -61,10 +61,12 @@ export class PhoneSpecification {
 
   /** Quan hệ 1-1 với sản phẩm */
   @OneToOne(() => ProductEntity, (product) => product.specification, {
-    
+    onDelete: 'CASCADE',
+    nullable: true
   })
 
-  product: ProductEntity;
+  @JoinColumn()
+  product?: ProductEntity;
 
   /** Ngày tạo bản ghi */
   @CreateDateColumn()

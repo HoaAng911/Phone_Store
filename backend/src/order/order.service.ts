@@ -34,7 +34,7 @@ export class OrderService {
     private readonly orderRepo: Repository<OrderEntity>,
   ) { }
 
-  async createOrder(userId: number, dto: CreateOrderDto): Promise<OrderEntity> {
+  async createOrder(userId: string, dto: CreateOrderDto): Promise<OrderEntity> {
     // 1. Kiểm tra loại đơn
     if (!['cart', 'single'].includes(dto.type)) {
       throw new BadRequestException('Type phải là "cart" hoặc "single"');
@@ -110,11 +110,19 @@ export class OrderService {
     return savedOrder;
   }
 
-async getOrderByID(userId:number):Promise<OrderEntity[]>{
+async getOrderByID(userId:string):Promise<OrderEntity[]>{
   return this.orderRepo.find({
     where:{user:{id:userId}},
     relations:['items','item.product','address'],
     order:{createdAt:'DESC'}
   })
+}
+async getAllOrder():Promise<OrderEntity[]>{
+  const orders = await this.orderRepo.find({
+    relations: ['items', 'items.product', 'address', 'user'],
+    order: { createdAt: 'DESC' },
+  }
+  )
+  return orders
 }
 }

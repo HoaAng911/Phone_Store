@@ -19,14 +19,15 @@ export class AuthController {
 
   //  Đăng ký tài khoản
   @Post('register')
-  register(@Body() dto: RegisterDto) {
-    return this.authService.register(dto);
+  async register(@Body() dto: RegisterDto) {
+    const result = await this.authService.register(dto);
+    return result
   }
 
   //  Đăng nhập
   @Post('login')
-  login(@Body() dto: LoginDto) {
-    return this.authService.login(dto.email, dto.password);
+  async login(@Body() dto: LoginDto) {
+    return await this.authService.login(dto.email, dto.password);
   }
 
   //  Lấy thông tin cá nhân (yêu cầu JWT)

@@ -1,43 +1,21 @@
+// AddProductForm.jsx
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, Upload, Loader2 } from 'lucide-react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import useProductStore from '../../store/useProductStore';
-
-// ShadCN Components
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import BasicInfoSection from './BasicInfoSection';
 import ImageUpload from './ImageUpload';
 import SpecificationSection from './SpecificationSection';
 
-const formSchema = z.object({
-  name: z.string().min(1, 'Tên sản phẩm là bắt buộc'),
-  description: z.string().optional(),
-  price: z.string().min(1, 'Giá là bắt buộc').refine((val) => !isNaN(val) && Number(val) > 0, {
-    message: 'Giá phải là số dương',
-  }),
-  brand: z.string().min(1, 'Thương hiệu là bắt buộc'),
-  stock: z.string().optional().refine((val) => !val || (!isNaN(val) && Number(val) >= 0), {
-    message: 'Tồn kho phải là số không âm',
-  }),
-});
-
 const AddProductForm = () => {
-  const { UploadImage, createProduct } = useProductStore();
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    price: '',
+    brand: '',
+    stock: '',
+    sku: '',
+    category: 'phone',
+    originalPrice: '',
+    discountPercent: '',
+  });
+
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -57,142 +35,163 @@ const AddProductForm = () => {
     colors: [],
   });
 
-  const form = useForm({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: '',
-      description: '',
-      price: '',
-      brand: '',
-      stock: '',
-    },
-  });
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
 
-  const onSubmit = async (values) => {
-    if (!values.name || !values.price || !values.brand) {
-      return form.setError('root', { message: 'Vui lòng điền đầy đủ thông tin bắt buộc' });
+    // Tự động tính % giảm giá
+    if (name === 'originalPrice' || name === 'price') {
+      const original = name === 'originalPrice' ? Number(value) : Number(formData.originalPrice);
+      const current = name === 'price' ? Number(value) : Number(formData.price);
+      if (original > current && current > 0) {
+        const discount = Math.round(((original - current) / original) * 100);
+        setFormData(prev => ({ ...prev, discountPercent: discount }));
+      } else {
+        setFormData(prev => ({ ...prev, discountPercent: '' }));
+      }
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!formData.name || !formData.price || !formData.brand || !formData.sku) {
+      alert('Vui lòng điền đầy đủ thông tin bắt buộc');
+      return;
     }
 
     setLoading(true);
     try {
-      let images = [];
+      // Giả lập upload ảnh
+      let imageUrl = '';
       if (file) {
-        const uploadRes = await UploadImage(file);
-        if (uploadRes?.url) images.push({ url: uploadRes.url });
+        // Ở đây bạn sẽ gọi API upload thật
+        imageUrl = URL.createObjectURL(file); // Giả lập
       }
 
-      const hasSpec = Object.values(specification).some(
-        (v) => (Array.isArray(v) ? v.length > 0 : v)
-      );
-
-      const productData = {
-        ...values,
-        price: +values.price,
-        stock: values.stock ? +values.stock : 0,
-        images,
-        specification: hasSpec ? specification : undefined,
+      const product = {
+        ...formData,
+        price: Number(formData.price),
+        stock: formData.stock ? Number(formData.stock) : 0,
+        originalPrice: formData.originalPrice ? Number(formData.originalPrice) : Number(formData.price),
+        discountPercent: formData.discountPercent ? Number(formData.discountPercent) : 0,
+        images: imageUrl ? [{ url: imageUrl }] : [],
+        specification: Object.values(specification).some(v => Array.isArray(v) ? v.length : v)
+          ? specification
+          : null,
+        status: 'active',
       };
 
-      await createProduct(productData);
-
-      // Reset form
-      form.reset();
-      setSpecification({
-        screenSize: '',
-        resolution: '',
-        cpu: '',
-        ram: '',
-        storage: '',
-        battery: '',
-        os: '',
-        camera: '',
-        sim: '',
-        weight: '',
-        colors: [],
+      console.log('Sản phẩm gửi đi:', product);
+      alert('Thêm sản phẩm thành công!');
+      
+      // Reset
+      setFormData({
+        name: '', description: '', price: '', brand: '', stock: '',
+        sku: '', category: 'phone', originalPrice: '', discountPercent: ''
       });
       setFile(null);
       setPreview(null);
+      setSpecification({
+        screenSize: '', resolution: '', cpu: '', ram: '', storage: '',
+        battery: '', os: '', camera: '', sim: '', weight: '', colors: []
+      });
       setShowSpecs(false);
-
-      alert('Thêm sản phẩm thành công');
-    } catch (error) {
-      console.error(error);
-      alert('Lỗi khi tạo sản phẩm');
+    } catch (err) {
+      alert('Lỗi khi thêm sản phẩm');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-5xl mx-auto">
-        <Card className="shadow-lg border border-gray-200">
-          <CardHeader className="bg-gray-800 text-white">
-            <CardTitle className="text-xl font-semibold">Thêm Sản Phẩm Mới</CardTitle>
-          </CardHeader>
-          <CardContent className="p-6">
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                {/* Basic Info */}
-                <BasicInfoSection form={form} />
+    <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow">
+      <h2 className="text-2xl font-bold mb-6 text-gray-800">Thêm Sản Phẩm Mới</h2>
 
-                {/* Image Upload */}
-                <ImageUpload
-                  file={file}
-                  setFile={setFile}
-                  preview={preview}
-                  setPreview={setPreview}
-                />
+      <form onSubmit={handleSubmit} className="space-y-6">
 
-                {/* Toggle Specifications */}
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowSpecs(!showSpecs)}
-                  className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-blue-600"
-                >
-                  {showSpecs ? (
-                    <>
-                      <ChevronUp className="w-4 h-4" /> Ẩn thông số kỹ thuật
-                    </>
-                  ) : (
-                    <>
-                      <ChevronDown className="w-4 h-4" /> Thêm thông số kỹ thuật
-                    </>
-                  )}
-                </Button>
+        {/* Thông tin cơ bản */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Tên sản phẩm <span className="text-red-500">*</span></label>
+            <input name="name" value={formData.name} onChange={handleChange} className="w-full p-2 border rounded" placeholder="iPhone 15 Pro" required />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Thương hiệu <span className="text-red-500">*</span></label>
+            <input name="brand" value={formData.brand} onChange={handleChange} className="w-full p-2 border rounded" placeholder="Apple" required />
+          </div>
+        </div>
 
-                {/* Specification Section */}
-                {showSpecs && (
-                  <SpecificationSection
-                    specification={specification}
-                    setSpecification={setSpecification}
-                  />
-                )}
+        <div>
+          <label className="block text-sm font-medium mb-1">Mô tả</label>
+          <textarea name="description" value={formData.description} onChange={handleChange} rows={3} className="w-full p-2 border rounded" placeholder="Mô tả ngắn gọn..." />
+        </div>
 
-                {/* Submit Button */}
-                <div className="flex justify-end pt-4 border-t border-gray-200">
-                  <Button
-                    type="submit"
-                    disabled={loading}
-                    className="min-w-[140px]"
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Đang thêm...
-                      </>
-                    ) : (
-                      'Thêm sản phẩm'
-                    )}
-                  </Button>
-                </div>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
-      </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Giá (VNĐ) <span className="text-red-500">*</span></label>
+            <input type="number" name="price" value={formData.price} onChange={handleChange} className="w-full p-2 border rounded" required />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Tồn kho</label>
+            <input type="number" name="stock" value={formData.stock} onChange={handleChange} className="w-full p-2 border rounded" placeholder="0" />
+          </div>
+        </div>
+
+        {/* Thông tin quản lý */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">SKU <span className="text-red-500">*</span></label>
+            <input name="sku" value={formData.sku} onChange={handleChange} className="w-full p-2 border rounded uppercase" placeholder="IPHONE-15-PRO" required />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Danh mục</label>
+            <select name="category" value={formData.category} onChange={handleChange} className="w-full p-2 border rounded">
+              <option value="phone">Điện thoại</option>
+              <option value="laptop">Laptop</option>
+              <option value="tablet">Máy tính bảng</option>
+              <option value="accessories">Phụ kiện</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Giá gốc (VNĐ)</label>
+            <input type="number" name="originalPrice" value={formData.originalPrice} onChange={handleChange} className="w-full p-2 border rounded" placeholder="Giá trước giảm" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Giảm giá (%)</label>
+            <input type="number" value={formData.discountPercent} readOnly className="w-full p-2 border rounded bg-gray-100" />
+          </div>
+        </div>
+
+        {/* Upload ảnh */}
+        <ImageUpload file={file} setFile={setFile} preview={preview} setPreview={setPreview} />
+
+        {/* Thông số kỹ thuật (toggle) */}
+        <button
+          type="button"
+          onClick={() => setShowSpecs(!showSpecs)}
+          className="text-blue-600 hover:underline text-sm font-medium"
+        >
+          {showSpecs ? '↑ Ẩn thông số kỹ thuật' : '↓ Thêm thông số kỹ thuật'}
+        </button>
+
+        {showSpecs && (
+          <SpecificationSection specification={specification} setSpecification={setSpecification} />
+        )}
+
+        {/* Nút submit */}
+        <div className="pt-4 border-t">
+          <button
+            type="submit"
+            disabled={loading}
+            className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+          >
+            {loading ? 'Đang thêm...' : 'Thêm sản phẩm'}
+          </button>
+        </div>
+      </form>
     </div>
   );
 };

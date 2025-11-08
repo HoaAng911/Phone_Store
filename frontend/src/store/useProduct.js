@@ -24,7 +24,7 @@ const useProductStore = create((set) => ({
       set({ loading: true });
       // Gọi API lấy sản phẩm với query params: page & limit
       const res = await axiosClient.get("/products", {
-        params: { page, limit: 5 },
+        params: { page, limit:5},
       });
 
       const result = res.data;
@@ -39,7 +39,7 @@ const useProductStore = create((set) => ({
        * -> Cập nhật toàn bộ state liên quan đến danh sách.
        */
       set({
-        products: result,
+        products: result.data,
         page: result.page || 1,
         totalPage: result.totalPage || 1,
         loading: false,
@@ -127,21 +127,16 @@ const useProductStore = create((set) => ({
     }
   },
 
-  /**
-   *  Upload ảnh lên server
-   * @param {File} file - File ảnh cần upload
-   * @returns {Promise<{url: string}>} - Trả về link ảnh đã upload
-   */
   UploadImage: async (file) => {
     try {
       const formData = new FormData();
-      formData.append("file", file); // key phải trùng với field mà backend nhận
+      formData.append("file", file);
 
       const res = await axiosClient.post("/upload", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      return res.data; // ví dụ: { url: "https://..." }
+      return res.data; 
     } catch (error) {
       console.error(" Lỗi khi upload ảnh:", error);
       throw error;
@@ -157,10 +152,7 @@ const useProductStore = create((set) => ({
     }
   },
 
-  /**
-   *  Cập nhật trang hiện tại (pagination)
-   * @param {number} newPage - Trang mới cần chuyển đến
-   */
+
   setPage: (newPage) => set({ page: newPage }),
 }));
 

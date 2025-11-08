@@ -5,8 +5,8 @@ import { OrderEntity } from "./order.entity";
 
 @Entity('order_item')
 export class OrderItemEntity {
-  @PrimaryGeneratedColumn()
-  id: number
+  @PrimaryGeneratedColumn({type:"bigint"})
+  id: string
   @ManyToOne(() => ProductEntity)
   product: ProductEntity
   @ManyToOne(() => OrderEntity,(order)=>order.items,{onDelete:'CASCADE'})

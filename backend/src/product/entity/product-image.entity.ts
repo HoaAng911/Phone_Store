@@ -10,8 +10,8 @@ import { ProductEntity } from './product.entity';
 @Entity('product_image')
 export class ProductImage {
   /** Mã ảnh (tự sinh) */
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn({type:'bigint'})
+  id: string;
 
   /** Đường dẫn ảnh sản phẩm */
   @Column({ type: 'varchar', length: 500 })

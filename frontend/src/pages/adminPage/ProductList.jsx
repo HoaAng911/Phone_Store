@@ -2,7 +2,7 @@
 
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import useProductStore from "../store/useProductStore";
+import useProductStore from "../store/useProduct";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -100,7 +100,7 @@ const ProductList = () => {
           <CardHeader>
             <CardTitle>Danh sách sản phẩm</CardTitle>
             <CardDescription>
-              Tổng: {products.data?.length || 0} sản phẩm (Trang {page}/{totalPage})
+              Tổng: {products.length || 0} sản phẩm (Trang {page}/{totalPage})
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -118,7 +118,7 @@ const ProductList = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {products.data?.map((p) => (
+                  {products.map((p) => (
                     <TableRow key={p.id} className="hover:bg-muted/50 transition-colors">
                       <TableCell className="font-medium">{p.id}</TableCell>
 

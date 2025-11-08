@@ -18,21 +18,24 @@ export class OrderController {
 
   @Post()
   async createOrder(
-    @Query('userId', ParseIntPipe) userId: number,
+    @Query('userId', ParseIntPipe) userId: string,
     @Body() dto: CreateOrderDto,
   ) {
     return this.orderService.createOrder(userId, dto);
   }
 
   
-  @Get()
-  async getOrdersByUser(@Query('userId', ParseIntPipe) userId: number) {
+  @Get('my')
+  async getOrdersByUserId(@Query('userId', ParseIntPipe) userId: string) {
     return this.orderService.getOrderByID(userId);
   }
 
-
+@Get()
+async getAllOrder(){
+  return this.orderService.getAllOrder()
+}
   @Get(':id')
-  async getOrderDetail(@Param('id', ParseIntPipe) orderId: number) {
+  async getOrderDetail(@Param('id', ParseIntPipe) orderId: string) {
     return this.orderService.getOrderByID(orderId);
   }
 }

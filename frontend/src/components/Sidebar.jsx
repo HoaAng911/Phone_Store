@@ -22,7 +22,7 @@ const SideBar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const menu = [
-    { name: 'Dashboard', path: '/', icon: Home },
+    { name: 'Dashboard', path: '/dashboard', icon: Home },
     { name: 'User', path: '/users', icon: Users },
     {
       name: 'Product',
@@ -38,7 +38,7 @@ const SideBar = () => {
       submenu: [
         { name: 'Danh sách đơn hàng', path: '/order', icon: Package },
         { name: 'Giỏ hàng người dùng', path: '/carts', icon: ShoppingBag },
-        { name: 'Thống kê doanh thu', path: '/order/stat', icon: BarChart3 },
+        { name: 'Thống kê doanh thu', path: '/orders/stat', icon: BarChart3 },
       ],
     },
     { name: 'Setting', path: '/setting', icon: Settings },

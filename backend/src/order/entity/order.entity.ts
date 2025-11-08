@@ -7,8 +7,8 @@ import { OrderItemEntity } from "./order-item.entity";
 
 @Entity('orders')
 export class OrderEntity {
-  @PrimaryGeneratedColumn()
-  id: number
+  @PrimaryGeneratedColumn({type:"bigint"})
+  id: string
   @ManyToOne(() => UserEntity, (user) => user.orders)
   user: UserEntity
   @ManyToOne(() => AddressEntity, { nullable:true })

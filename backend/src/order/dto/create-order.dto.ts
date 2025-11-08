@@ -29,7 +29,7 @@ export class CreateOrderDto {
 
   @IsOptional()
   @IsInt({ message: 'addressId phải là số' })
-  addressId?: number;
+  addressId?: string;
 
   @IsOptional()
   @IsObject()
@@ -38,7 +38,7 @@ export class CreateOrderDto {
   @IsOptional()
   @IsInt({ message: 'productId phải là số' })
   @Min(1, { message: 'productId phải lớn hơn 0' })
-  productId?: number;
+  productId?: string;
 
   @IsOptional()
   @IsInt({ message: 'quantity phải là số' })

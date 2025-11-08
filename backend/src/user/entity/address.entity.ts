@@ -14,8 +14,8 @@ import { UserEntity } from './user.entity';
 
 @Entity('addresses')
 export class AddressEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn({type:'bigint'})
+  id: string;
 
   // === BẮT BUỘC ===
   @IsString({ message: 'Họ tên không được để trống' })

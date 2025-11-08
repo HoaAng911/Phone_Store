@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import useCartStore from "../store/useCart";
+import useCartStore from "../../store/useCart";
 import {
   Card,
   CardContent,
@@ -18,7 +18,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Loader2, Plus, Trash2, Calculator, Trash } from "lucide-react";
 
 export default function CartTestPage() {
-  const [userId, setUserId] = useState(1);
+  const [userId, setUserId] = useState("1");
   const [productId, setProductId] = useState("");
   const [quantity, setQuantity] = useState(1);
 
@@ -37,7 +37,7 @@ export default function CartTestPage() {
   const handleFetch = () => fetchCart(userId);
   const handleAdd = () => {
     if (!productId) return;
-    addToCart({ userId, productId: Number(productId), quantity: Number(quantity) });
+    addToCart({ userId, productId, quantity: Number(quantity) });
     setProductId("");
     setQuantity(1);
   };
@@ -74,7 +74,7 @@ export default function CartTestPage() {
                 <Label htmlFor="userId">User ID</Label>
                 <Input
                   id="userId"
-                  type="number"
+                  type="text"
                   value={userId}
                   onChange={(e) => setUserId(Number(e.target.value))}
                   min="1"
@@ -106,7 +106,7 @@ export default function CartTestPage() {
                 <Label htmlFor="productId">Product ID</Label>
                 <Input
                   id="productId"
-                  type="number"
+                  type="text"
                   placeholder="Nhập ID"
                   value={productId}
                   onChange={(e) => setProductId(e.target.value)}

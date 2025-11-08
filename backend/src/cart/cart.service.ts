@@ -20,45 +20,29 @@ export class CartService {
     @InjectRepository(UserEntity)
     private userRepo: Repository<UserEntity>
   ) { }
-  //
-  private async checkUserAndProduct(userId: number, productId: number): Promise<void> {
-    try {
-      const user = await this.userRepo.findOne({ where: { id: userId } })
-      const product = await this.productRepo.findOne({ where: { id: productId } })
-      if (!user) {
-        throw new NotFoundException('Nguoi dung khong ton tai')
-      }
-      if (!product) {
-        throw new NotFoundException('San pham khong ton tai')
-      }
-
-    } catch (error) {
-      if (error instanceof NotFoundException) {
-        throw error;
-      }
-      throw new InternalServerErrorException('Lỗi khi kiểm tra người dùng: ' + error.message);
-    }
+  private async validateUser(userId: string): Promise<UserEntity> {
+    const user = await this.userRepo.findOneBy({ id: userId });
+    if (!user) throw new NotFoundException('Người dùng không tồn tại');
+    return user;
   }
-  private async checkUser(userId: number): Promise<void> {
-    try {
-      const user = await this.userRepo.findOne({ where: { id: userId } })
-      if (!user) {
-        throw new NotFoundException('Nguoi dung khong ton tai')
-      }
-    } catch (error) {
-      if (error instanceof NotFoundException) {
-        throw error;
-      }
-      throw new InternalServerErrorException('Lỗi khi kiểm tra người dùng: ' + error.message);
-    }
-
+  private async validateProduct(productId: string): Promise<ProductEntity> {
+    const product = await this.productRepo.findOneBy({ id: productId });
+    if (!product) throw new NotFoundException('Sản phẩm không tồn tại');
+    return product;
   }
-
-  async addToCart(createCartDto: CreateCartDto): Promise<CartEntity> {
+  private async checkUserAndProduct(userId: string, productId: string): Promise<void> {
+    await Promise.all([
+      this.validateUser(userId),
+      this.validateProduct(productId),
+    ]);
+  }
+  async addToCart(userId: string, createCartDto: CreateCartDto): Promise<CartEntity> {
     try {
-      const { userId, productId, quantity } = createCartDto
+      console.log('userId:', userId);
+      console.log('createCartDto:', createCartDto);
+      const { productId, quantity } = createCartDto
 
-      if (!userId || !productId || !quantity) {
+      if (!userId || !productId || quantity == null || quantity < 1) {
         throw new BadRequestException('Du lieu khong hop le: UserId,ProductId,quantity')
       }
       //Kiem tra user va product ton tai
@@ -76,16 +60,16 @@ export class CartService {
       const cartItem = this.cartRepo.create({ userId, productId, quantity })
       return this.cartRepo.save(cartItem)
     } catch (error) {
-     if (error instanceof NotFoundException || error instanceof BadRequestException) {
-    throw error;
-  }
-  throw new InternalServerErrorException('Lỗi khi thêm vào giỏ hàng: ' + error.message);
+      if (error instanceof NotFoundException || error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Lỗi khi thêm vào giỏ hàng: ' + error.message);
     }
 
   }
-  async updateCartItem(updateCartDto: UpdateCartDto): Promise<CartEntity> {
+  async updateCartItem(userId: string, updateCartDto: UpdateCartDto): Promise<CartEntity> {
     try {
-      const { userId, productId, quantity } = updateCartDto
+      const { productId, quantity } = updateCartDto
       //Kiem tra user va product co ton tai hay ko
       await this.checkUserAndProduct(userId, productId)
       // Kiem tra gio hang
@@ -95,8 +79,11 @@ export class CartService {
       if (!cartItem) {
         throw new NotFoundException(`San pham voi id ${productId} khong co trong gio hang`)
       }
-      //Cap nhat so luong neu da co trong gio hang
-      cartItem.quantity = quantity
+
+      if (quantity !== undefined) {
+        cartItem.quantity = quantity
+      }
+
       return await this.cartRepo.save(cartItem)
     } catch (error) {
       if (error instanceof NotFoundException || error instanceof BadRequestException) {
@@ -105,7 +92,7 @@ export class CartService {
       throw new InternalServerErrorException('Lỗi khi cập nhật giỏ hàng: ' + error.message)
     }
   }
-  async removeFormCart(userId: number, productId: number): Promise<void> {
+  async removeFromCart(userId: string, productId: string): Promise<void> {
     try {
       //Kiem tra user va product
       await this.checkUserAndProduct(userId, productId)
@@ -125,10 +112,10 @@ export class CartService {
       throw new InternalServerErrorException('Lỗi khi xóa sản phẩm khỏi giỏ hàng: ' + error.message);
     }
   }
-  async getCartByUserId(userId: number): Promise<CartEntity[]> {
+  async getCartByUserId(userId: string): Promise<CartEntity[]> {
     try {
       //Kiem tra user
-      await this.checkUser(userId)
+      await this.validateUser(userId)
       // Lay gio hang voi san pham
       const cartItems = await this.cartRepo.find({
         where: { userId },
@@ -142,16 +129,16 @@ export class CartService {
       throw new InternalServerErrorException('Lỗi khi lấy thông tin giỏ hàng: ' + error.message);
     }
   }
-  async calculateCartTotal(userId: number): Promise<number> {
+  async calculateCartTotal(userId: string): Promise<number> {
     try {
       //Kiem tra user
-      await this.checkUser(userId)
+      await this.validateUser(userId)
       //Lay gio hang voi thong tin san pham
       const cartItems = await this.cartRepo.find({
         where: { userId },
         relations: ['product']
       })
-      if (!cartItems || cartItems.length===0) {
+      if (!cartItems || cartItems.length === 0) {
         return 0
       }
       //Tinh tong tien
@@ -167,9 +154,9 @@ export class CartService {
 
     }
   }
-  async clearCart(userId: number): Promise<void> {
+  async clearCart(userId: string): Promise<void> {
     try {
-      await this.checkUser(userId)
+      await this.validateUser(userId)
       await this.cartRepo.delete({ userId })
     } catch (error) {
       if (error instanceof NotFoundException) {

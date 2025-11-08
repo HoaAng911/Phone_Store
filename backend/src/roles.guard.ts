@@ -1,3 +1,4 @@
+// src/roles.guard.ts
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
@@ -6,13 +7,17 @@ export class RolesGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const requiredRoles = this.reflector.get<string[]>('roles', context.getHandler());
-    if (!requiredRoles) return true;
+    // LẤY TỪ CLASS TRƯỚC, SAU ĐÓ METHOD → ĐÚNG THỨ TỰ NESTJS
+    const roles = this.reflector.getAllAndOverride<string[]>('roles', [
+      context.getHandler(),   // method
+      context.getClass(),     // class
+    ]);
 
-    const request = context.switchToHttp().getRequest();
-    const user = request.user;
+    if (!roles?.length) return true;
 
-    // Giả sử JWT đã được decode và có user.role
-    return requiredRoles.includes(user?.role);
+    const user = context.switchToHttp().getRequest().user;
+    console.log('RolesGuard → user:', user); // DEBUG
+
+    return user && roles.includes(user.role);
   }
 }

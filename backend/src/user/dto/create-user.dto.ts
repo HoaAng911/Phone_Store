@@ -1,5 +1,6 @@
 import {
   IsEmail,
+  IsIn,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -10,7 +11,7 @@ export class CreateUserDto {
   /** Tên người dùng */
   @IsNotEmpty({ message: 'Tên không được để trống' })
   @IsString({ message: 'Tên phải là chuỗi ký tự' })
-  name: string;
+  username: string;
 
   /** Email người dùng */
   @IsEmail({}, { message: 'Email không hợp lệ' })
@@ -24,6 +25,6 @@ export class CreateUserDto {
 
   /** Vai trò (mặc định là "user") */
   @IsOptional()
-  @IsString({ message: 'Vai trò phải là chuỗi ký tự' })
-  role?: string;
+  @IsIn(['user','admin'],{ message: 'Vai trò phải là chuỗi ký tự' })
+  role?: 'user'|'admin';
 }

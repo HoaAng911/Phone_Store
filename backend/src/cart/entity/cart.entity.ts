@@ -5,12 +5,12 @@ import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGenerat
 
 @Entity('cart')
 export class CartEntity {
-  @PrimaryGeneratedColumn()
-  id: number
-  @Column()
-  userId: number
-  @Column()
-  productId: number
+  @PrimaryGeneratedColumn({type:'bigint'})
+  id: string
+  @Column({type:'bigint',nullable:false})
+  userId: string
+  @Column({type:'bigint',nullable:false})
+  productId: string
   @Column({ default: 1 })
   quantity: number
   @ManyToOne(() => UserEntity, (user) => user.cart)

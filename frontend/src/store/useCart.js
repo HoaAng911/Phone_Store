@@ -1,119 +1,127 @@
-import { create } from 'zustand'
-import axiosClient from '../api/axiosClient'
+import { create } from 'zustand';
+import axiosClient from '../api/axiosClient';
 
-const useCartStore = create((set,get) => ({
-
+const useCartStore = create((set, get) => ({
   cartItems: [],
   total: 0,
   loading: false,
+
+  // LẤY GIỎ HÀNG - OK
   fetchCart: async (userId) => {
     try {
-      set({ loading: true })
-      //goi api
-      const res = await axiosClient.get(`/cart/${userId}`)
-      set({ cartItems: res.data, loading: false })
-    
-      //Tinh tong tien sau lay gio
-      get().calculateTotal(userId)
+      set({ loading: true });
+      const res = await axiosClient.get(`/cart/${userId}`);
+      set({ cartItems: res.data, loading: false });
+      get().calculateTotal(userId);
     } catch (error) {
-      console.error(" Lỗi khi tải giỏ hàng:", error);
-      set({ loading: false });
+      console.error("Lỗi khi tải giỏ hàng:", error.response?.data || error.message);
+      set({ loading: false, cartItems: [] });
     }
   },
-  addToCart: async (data) => {
+
+  // THÊM VÀO GIỎ - ĐÃ SỬA ROUTE + CÚ PHÁP
+  addToCart: async ({ userId, productId, quantity = 1 }) => {
     try {
-      set({ loading: true })
-      const res = await axiosClient.post('/cart', data, {
-        headers: { "Content-Type": "application/json" },
-      })
-      const newItem = res.data
+      set({ loading: true });
+      console.log("Gửi addToCart:", { userId, productId, quantity });
+      const res = await axiosClient.post(
+        `/cart/${userId}`,
+      );
+      const newItem = res.data;
+
       set((state) => ({
         cartItems: [
+          // SỬA CÚ PHÁP: DẤU PHẨY SAI
           ...state.cartItems.filter(
-            (item) => !(item.userId === data.userId && item.productId === data.productId)
-            , newItem)
-        ], loading: false
-      }))
-      get().calculateTotal(data.userId)
-      return newItem
+            (item) => !(item.userId === userId && item.productId === productId)
+          ),
+          newItem,
+        ],
+        loading: false,
+      }));
+
+      get().calculateTotal(userId);
+      return newItem;
     } catch (error) {
-      console.error(" Lỗi khi thêm vào giỏ hàng:", error);
+      console.error("Lỗi khi thêm vào giỏ hàng:", error.response?.data || error.message);
       set({ loading: false });
+      throw error;
     }
   },
-  //Cap nhat so luong sanpham trong gio
-  updateCartItem: async (data) => {
+
+  // CẬP NHẬT - ĐÃ SỬA ROUTE
+  updateCartItem: async ({ userId, productId, quantity }) => {
     try {
-      set({loading:true})
-      const res = await axiosClient.patch('/cart',data,{
-          headers: { "Content-Type": "application/json" },
-      })
-      const updatedItem = res.data
+      set({ loading: true });
+      const res = await axiosClient.patch(
+        `/cart/${userId}`,           // ĐÃ SỬA
+        { productId, quantity }
+      );
+      const updatedItem = res.data;
+
       set((state) => ({
         cartItems: state.cartItems.map((item) =>
-          item.userId === data.userId && item.productId === data.productId
+          item.userId === userId && item.productId === productId
             ? updatedItem
             : item
         ),
         loading: false,
       }));
-      get().calculateTotal(data.userId)
-      return updatedItem
+
+      get().calculateTotal(userId);
+      return updatedItem;
     } catch (error) {
-       console.error(" Lỗi khi cập nhật vào giỏ hàng:", error);
+      console.error("Lỗi khi cập nhật giỏ hàng:", error.response?.data || error.message);
       set({ loading: false });
+      throw error;
     }
   },
-  // xoa 1 san pham khoi gio
-  removeFromCart:async(userId,productId)=>{
-try {
-  set({loading:true})
-  await axiosClient.delete(`/cart/${userId}/${productId}`)
-  set((state)=>({
-      cartItems:state.cartItems.filter(
-        (item)=>!(item.userId===userId&&item.productId===productId)
-      ),
-      loading:false
-  }))
-  get().calculateTotal(userId)
-} catch (error) {
-  console.error("Lỗi khi xóa sản phẩm khỏi giỏ:", error);
+
+  // XÓA 1 MẶT HÀNG - OK
+  removeFromCart: async (userId, productId) => {
+    try {
+      set({ loading: true });
+      await axiosClient.delete(`/cart/${userId}/${productId}`);
+      set((state) => ({
+        cartItems: state.cartItems.filter(
+          (item) => !(item.userId === userId && item.productId === productId)
+        ),
+        loading: false,
+      }));
+      get().calculateTotal(userId);
+    } catch (error) {
+      console.error("Lỗi khi xóa sản phẩm khỏi giỏ:", error.response?.data || error.message);
       set({ loading: false });
-}
+      throw error;
+    }
   },
-  //tinh tong gio hang
+
+  // TÍNH TỔNG - OK
   calculateTotal: async (userId) => {
     try {
-      const res = await axiosClient.get(`/cart/${userId}/total`)
-      const { total } = res.data
-      set({ total })
+      const res = await axiosClient.get(`/cart/${userId}/total`);
+      set({ total: res.data.total });
     } catch (error) {
-      console.error(" Lỗi khi tính tổng giỏ hàng:", error);
+      console.error("Lỗi khi tính tổng giỏ hàng:", error.response?.data || error.message);
       set({ total: 0 });
     }
   },
-  //Xoa toan bo gio hang
-  clearCart:async(userId)=>{
+
+  // XÓA TOÀN BỘ - OK
+  clearCart: async (userId) => {
     try {
-      set({loading:true})
-      await axiosClient.delete(`/cart/${userId}`)
-      set({
-        cartItems:[],
-        total:0,
-        loading:false
-      })
+      set({ loading: true });
+      await axiosClient.delete(`/cart/${userId}`);
+      set({ cartItems: [], total: 0, loading: false });
     } catch (error) {
-      console.error("Lỗi khi xóa giỏ hàng:", error);
+      console.error("Lỗi khi xóa giỏ hàng:", error.response?.data || error.message);
       set({ loading: false });
+      throw error;
     }
   },
-  //reset store (dung khi logout)
-  reset:()=>{
-    set({
-      cartItems:[],
-      total:0,
-      loading:false,
-    })
-  }
-}))
-export default useCartStore
+
+  // RESET KHI LOGOUT - OK
+  reset: () => set({ cartItems: [], total: 0, loading: false }),
+}));
+
+export default useCartStore;
