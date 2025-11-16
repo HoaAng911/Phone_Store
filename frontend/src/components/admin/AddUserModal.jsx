@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import useUserStore from '../store/useUserStore';
+import useUserStore from '../../store/useUserStore';
 
 const AddUserModal = ({ open, setOpen, selectedUser, setSelectedUser }) => {
   const [form, setForm] = useState({

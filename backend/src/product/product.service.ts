@@ -1,11 +1,12 @@
 import {
+  BadRequestException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, MoreThan } from 'typeorm';
-import { ProductEntity } from './entity/product.entity';
+import { Repository, MoreThan, MoreThanOrEqual, IsNull } from 'typeorm';
+import { ProductCategory, ProductEntity } from './entity/product.entity';
 import { ProductImage } from './entity/product-image.entity';
 import { PhoneSpecification } from './entity/phone-specification.entity';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -21,13 +22,9 @@ export class ProductService {
     @InjectRepository(ProductImage)
     private readonly imageRepo: Repository<ProductImage>,
 
-    @InjectRepository(PhoneSpecification) 
+    @InjectRepository(PhoneSpecification)
     private readonly specRepo: Repository<PhoneSpecification>,
   ) { }
-
-  /**
-   *  Tạo sản phẩm mới
-   */
   async create(createProductDto: CreateProductDto): Promise<ProductEntity> {
     const { images, specification, ...productData } = createProductDto;
 
@@ -44,9 +41,6 @@ export class ProductService {
     return await this.productRepo.save(product);
   }
 
-  /**
-   *  Lấy danh sách sản phẩm có filter, sort, pagination
-   */
   async findAll(query: ProductQueryDto) {
     const {
       page = 1,
@@ -64,24 +58,24 @@ export class ProductService {
       .leftJoinAndSelect('product.images', 'images')
       .leftJoinAndSelect('product.specification', 'specification');
 
-    //  Tìm kiếm theo tên hoặc thương hiệu
+
     if (search) {
       qb.andWhere('(product.name LIKE :search OR product.brand LIKE :search)', {
         search: `%${search}%`,
       });
     }
 
-    // Lọc theo thương hiệu
+
     if (brand) {
       qb.andWhere('product.brand = :brand', { brand });
     }
 
-    //  Lọc theo giá tối đa
+
     if (priceMax) {
       qb.andWhere('product.price <= :priceMax', { priceMax });
     }
 
-    //  Sắp xếp
+
     switch (sort) {
       case 'price_asc':
         qb.orderBy('product.price', 'ASC');
@@ -109,14 +103,7 @@ export class ProductService {
     };
   }
 
-  /**
-   *  Lấy chi tiết sản phẩm theo ID
-   */
   async findOne(id: string): Promise<ProductEntity> {
-    if (!id || !/^\d+$/.test(id)) {
-    throw new NotFoundException('ID sản phẩm không hợp lệ');
-  }
-
     const product = await this.productRepo.findOne({
       where: { id },
       relations: ['specification', 'images'],
@@ -129,16 +116,13 @@ export class ProductService {
     return product;
   }
 
-  /**
-   *  Cập nhật thông tin sản phẩm
-   */
   async update(id: string, updateProductDto: UpdateProductDto): Promise<ProductEntity> {
     const product = await this.findOne(id);
     const { images, specification, ...updateData } = updateProductDto;
 
     Object.assign(product, updateData);
 
-    //  Cập nhật thông số kỹ thuật
+
     if (specification) {
       if (product.specification) {
         Object.assign(product.specification, specification);
@@ -147,7 +131,7 @@ export class ProductService {
       }
     }
 
-    //  Cập nhật hình ảnh
+
     if (images) {
       await this.imageRepo.delete({ product: { id } });
       product.images = images.map((img) => this.imageRepo.create({ url: img.url }));
@@ -156,9 +140,7 @@ export class ProductService {
     return await this.productRepo.save(product);
   }
 
-  /**
-   *  Xóa sản phẩm
-   */
+
   async remove(id: string): Promise<{ message: string }> {
     const product = await this.findOne(id);
 
@@ -175,16 +157,10 @@ export class ProductService {
     return { message: `Sản phẩm có ID ${id} đã được xóa thành công.` };
   }
 
-  /**
-   * Kiểm tra sản phẩm tồn tại
-   */
   async exists(id: string): Promise<boolean> {
     return await this.productRepo.exists({ where: { id } });
   }
 
-  /**
-   *  Thống kê sản phẩm
-   */
   async getProductStat() {
     const totalProduct = await this.productRepo.count();
 
@@ -225,5 +201,74 @@ export class ProductService {
       outStockCount,
       resultBrand,
     };
+  }
+  getCategories(): string[] {
+    return Object.values(ProductCategory)
+  }
+  async getAllCategoryNow(): Promise<string[]> {
+    const categories = await this.productRepo
+      .createQueryBuilder('product')
+      .select('DISTINCT product.category', 'category')
+      .getRawMany();
+
+    return categories.map((c) => String(c.category));
+  }
+  async getProductsByCategory(category: string) {
+    return await this.productRepo.find({
+      where: { category },
+      relations: ['images', 'specification'],
+    })
+  }
+  async getFeaturedProducts(limit = 8): Promise<ProductEntity[]> {
+    return await this.productRepo.find({
+      where: { isFeatured: true },
+      order: { createdAt: 'DESC' },
+      take: limit
+    })
+  }
+ async getFlashSale(limit = 6): Promise<ProductEntity[]> {
+  const now = new Date();
+
+  const qb = this.productRepo
+    .createQueryBuilder('product')
+    .leftJoinAndSelect('product.images', 'images')
+    .where(
+      `(
+        (product.discountPercent >= :minDiscount AND product.flashSaleUntil > :now AND product.stock >= :minStock)
+        OR
+        (product.discountPercent >= :minDiscount AND product.flashSaleUntil IS NULL AND product.stock >= :minStock)
+      )`,
+      {
+        minDiscount: 15,
+        now,
+        minStock: 5,
+      },
+    )
+    .orderBy('product.discountPercent', 'DESC')
+    .addOrderBy('product.createdAt', 'DESC')
+    .select([
+      'product.id',
+      'product.name',
+      'product.price',
+      'product.originalPrice',
+      'product.discountPercent',
+      'product.flashSaleUntil',
+      'product.stock',
+      'product.createdAt',
+      'images.url',
+    ])
+    .take(limit);
+
+  return await qb.getMany();
+}
+  async toggleFlashSale(id: string, hours?: number): Promise<ProductEntity> {
+    const product = await this.findOne(id)
+
+    if (!hours) {
+      product.flashSaleUntil = undefined
+    } else {
+      product.flashSaleUntil = new Date(Date.now() + hours * 60 * 60 * 1000)
+    }
+    return this.productRepo.save((product))
   }
 }

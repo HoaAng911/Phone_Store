@@ -15,9 +15,9 @@ export default function LoginForm() {
     try {
       const user = await login(form.email, form.password);
       if (user.role === 'admin') {
-        navigate('/dashboard');
+        navigate('/admin/dashboard');
       } else {
-        navigate('/profile');
+        navigate('/');
       }
     } catch (err) {
       // error đã được xử lý trong store

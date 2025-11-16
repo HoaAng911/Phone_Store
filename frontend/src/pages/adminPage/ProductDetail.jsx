@@ -1,7 +1,7 @@
 // ProductDetail.jsx – ĐÃ SỬA + HIỂN THỊ ĐẦY ĐỦ
 import React, { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import useProductStore from "../store/useProduct";
+import useProductStore from "../../store/useProduct";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -73,7 +73,7 @@ const ProductDetail = () => {
             <p className="text-muted-foreground mt-1">Thông tin chi tiết về sản phẩm</p>
           </div>
           <Button asChild variant="outline">
-            <Link to="/products/list" className="gap-2">
+            <Link to="/admin/products/list" className="gap-2">
               <ArrowLeft className="w-4 h-4" />
               Quay lại
             </Link>

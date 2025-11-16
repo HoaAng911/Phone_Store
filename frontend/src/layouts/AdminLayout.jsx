@@ -1,8 +1,8 @@
 // layouts/MainLayout.jsx
-import SideBar from '../components/Sidebar'
+import SideBar from '../components/admin/Sidebar'
 import { Outlet } from 'react-router-dom'  // ← Thêm Outlet
 
-export default function MainLayout() {
+export default function AdminLayout() {
   return (
     <div className="flex h-screen bg-gray-50">
       <SideBar />

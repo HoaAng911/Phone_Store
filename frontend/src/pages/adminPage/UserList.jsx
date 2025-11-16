@@ -1,9 +1,9 @@
 // src/pages/UserList.jsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import useAuthStore from "../store/useAuthStore";
-import useUserStore from "../store/useUserStore";
-import AddUserModal from "../components/AddUserModal";
+import useAuthStore from "../../store/useAuthStore";
+import useUserStore from "../../store/useUserStore";
+import AddUserModal from "../../components/admin/AddUserModal";
 import {
   Card, CardContent, CardDescription, CardHeader, CardTitle,
 } from "@/components/ui/card";

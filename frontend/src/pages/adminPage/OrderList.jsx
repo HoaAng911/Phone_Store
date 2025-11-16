@@ -1,6 +1,6 @@
 // components/OrderList.jsx
 import { useEffect } from 'react';
-import useOrderStore from '../store/useOrderStore';
+import useOrderStore from '../../store/useOrderStore';
 import {
   Table,
   TableBody,

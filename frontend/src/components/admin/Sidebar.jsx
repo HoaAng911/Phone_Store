@@ -22,23 +22,23 @@ const SideBar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const menu = [
-    { name: 'Dashboard', path: '/dashboard', icon: Home },
-    { name: 'User', path: '/users', icon: Users },
+    { name: 'Dashboard', path: '/admin/dashboard', icon: Home },
+    { name: 'User', path: '/admin/users', icon: Users },
     {
       name: 'Product',
       icon: Box,
       submenu: [
-        { name: 'Thêm sản phẩm', path: '/products/add', icon: Plus },
-        { name: 'Danh sách sản phẩm', path: '/products/list', icon: List },
+        { name: 'Thêm sản phẩm', path: '/admin/products/add', icon: Plus },
+        { name: 'Danh sách sản phẩm', path: '/admin/products/list', icon: List },
       ],
     },
     {
       name: 'Order & Cart',
       icon: ShoppingCart,
       submenu: [
-        { name: 'Danh sách đơn hàng', path: '/order', icon: Package },
-        { name: 'Giỏ hàng người dùng', path: '/carts', icon: ShoppingBag },
-        { name: 'Thống kê doanh thu', path: '/orders/stat', icon: BarChart3 },
+        { name: 'Danh sách đơn hàng', path: '/admin/order', icon: Package },
+        { name: 'Giỏ hàng người dùng', path: '/admin/carts', icon: ShoppingBag },
+        { name: 'Thống kê doanh thu', path: '/admin/orders/stat', icon: BarChart3 },
       ],
     },
     { name: 'Setting', path: '/setting', icon: Settings },

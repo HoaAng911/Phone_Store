@@ -2,7 +2,7 @@
 
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import useProductStore from "../store/useProduct";
+import useProductStore from "../../store/useProduct";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -27,9 +27,9 @@ const ProductList = () => {
     fetchProducts(page);
   }, [page, fetchProducts]);
 
-  const handleDetail = (id) => navigate(`/products/${id}`);
-  const handleEdit = (id) => navigate(`/products/edit/${id}`);
-  const handleAddProduct = () => navigate("/products/add");
+  const handleDetail = (id) => navigate(`/admin/products/${id}`);
+  const handleEdit = (id) => navigate(`/admin/products/edit/${id}`);
+  const handleAddProduct = () => navigate("/admin/products/add");
 
   const handleDelete = async (id) => {
     if (!window.confirm("Bạn có chắc muốn xóa sản phẩm này?")) return;

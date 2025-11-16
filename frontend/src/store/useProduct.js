@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import axiosClient from "../api/axiosClient";
 
+
 /**
  * Zustand store dùng để quản lý state sản phẩm:
  *  - Danh sách sản phẩm (products)
@@ -10,34 +11,61 @@ import axiosClient from "../api/axiosClient";
  */
 const useProductStore = create((set) => ({
   products: [],
+  categories: [],
   product: null,
   loading: false,
   page: 1,
   totalPage: 1,
+  featuresProduct: [],
+  flashSalesProduct: [],
 
-  /**
-   *  Lấy danh sách sản phẩm (có phân trang)
-   * @param {number} page - Trang cần lấy (mặc định = 1)
-   */
+
+  fetchFlashSalesProduct: async () => {
+    try {
+      set({ loading: true })
+      const res = await axiosClient.get("/products/flash-sale?limit=6")
+
+      set({ flashSalesProduct: res.data, loading: false })
+    } catch (error) {
+      console.error(" Lỗi khi tải sản phẩm:", error);
+      set({ loading: false });
+    }
+  },
+  fetchFeaturesProduct: async () => {
+    try {
+      set({ loading: true })
+      const res = await axiosClient.get("/products/featured")
+
+      set({ featuresProduct: res.data, loading: false })
+    } catch (error) {
+      console.error(" Lỗi khi tải  sản phẩm:", error);
+      set({ loading: false });
+    }
+  },
+
+  fetchCategories: async () => {
+    try {
+      set({ loading: true })
+      const res = await axiosClient.get("/products/categories")
+      const uniqueCategories = Array.from(new Set(res.data));
+
+      set({ categories: uniqueCategories, loading: false })
+    } catch (error) {
+      console.error(" Lỗi khi tải danh mục sản phẩm:", error);
+      set({ loading: false });
+    }
+
+  },
+
   fetchProducts: async (page = 1) => {
     try {
       set({ loading: true });
       // Gọi API lấy sản phẩm với query params: page & limit
       const res = await axiosClient.get("/products", {
-        params: { page, limit:5},
+        params: { page, limit: 5 },
       });
 
       const result = res.data;
-
-      /**
-       *  Giả sử backend trả về:
-       * {
-       *   data: [...],
-       *   page: 1,
-       *   totalPage: 10
-       * }
-       * -> Cập nhật toàn bộ state liên quan đến danh sách.
-       */
       set({
         products: result.data,
         page: result.page || 1,
@@ -136,7 +164,7 @@ const useProductStore = create((set) => ({
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      return res.data; 
+      return res.data;
     } catch (error) {
       console.error(" Lỗi khi upload ảnh:", error);
       throw error;

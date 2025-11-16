@@ -1,10 +1,10 @@
+// src/product/entity/product.entity.ts
 import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
   JoinColumn,
-  ManyToOne,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
@@ -14,72 +14,105 @@ import { PhoneSpecification } from './phone-specification.entity';
 import { ProductImage } from './product-image.entity';
 import { CartEntity } from 'src/cart/entity/cart.entity';
 
+export enum ProductCategory {
+  PHONE = 'phone',
+  LAPTOP = 'laptop',
+  TABLET = 'tablet',
+  ACCESSORIES = 'accessories',
+}
+
 @Entity('products')
 export class ProductEntity {
-
-  @PrimaryGeneratedColumn({type:'bigint'})
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  //Ten &mo ta
+  // Tên & mô tả
   @Column({ type: 'varchar', length: 255 })
   name: string;
 
   @Column({ length: 500, nullable: true })
-  shortDescription?: string
+  shortDescription?: string;
+
   @Column({ type: 'text' })
   description: string;
-  //Gia & Khuyen mai
+
+  // Giá & khuyến mãi
   @Column({ type: 'int', default: 0 })
   price: number;
+
   @Column({ type: 'int', default: 0 })
-  originalPrice: number
+  originalPrice: number;
+
   @Column({ type: 'int', default: 0 })
-  discountPercent: number
-  //Thong tin san pham
+  discountPercent: number;
+
+  // Thông tin sản phẩm
   @Column({ type: 'varchar', length: 100 })
   brand: string;
+
   @Column({ type: 'varchar', length: 50, unique: true })
-  sku: string
+  sku: string;
+
   @Column({
     type: 'enum',
-    enum: ['phone', 'laptop', 'tablet', 'accessories'],
-    default: 'phone'
+    enum: ProductCategory,
+    default: ProductCategory.PHONE,
   })
   category: string;
-  //Ton kho &Ban hang
+
+  // Tồn kho & bán hàng
   @Column({ type: 'int', default: 0 })
   stock: number;
-  @CreateDateColumn({ default: 0 })
-  soldCount: number//so luong da ban
-  @CreateDateColumn({ default: 0 })
-  viewCount: number
-  //Danh gia
+
+  @Column({ default: 0 })
+  soldCount: number;
+
+  @Column({ default: 0 })
+  viewCount: number;
+
+  // Đánh giá
   @Column({ type: 'decimal', precision: 2, scale: 1, default: 0.0 })
-  rating: number
-  @CreateDateColumn({ default: 0 })
-  reviewCount: number
-  //Trang thai
-  @Column({type:'enum',enum:['active','inactive','out_stock'],default:'active'})
-  status:string
-  //Thoi gian
-  @CreateDateColumn()
+  rating: number;
+
+  @Column({ default: 0 })
+  reviewCount: number;
+
+  // Trạng thái
+  @Column({
+    type: 'enum',
+    enum: ['active', 'inactive', 'out_stock'],
+    default: 'active',
+  })
+  status: string;
+
+  @Column({ type: 'boolean', default: false })
+  isFeatured: boolean;
+
+  // Thời gian
+  @CreateDateColumn({ type: 'datetime', precision: 6 })
   createdAt: Date;
-  @UpdateDateColumn()
+
+  @UpdateDateColumn({ type: 'datetime', precision: 6 })
   updatedAt: Date;
-  @DeleteDateColumn()
-  deletedAt?: Date
+
+  @DeleteDateColumn({ type: 'datetime', precision: 6 })
+  deletedAt?: Date;
+
+  @Column({ type: 'datetime', nullable: true })
+  flashSaleUntil?: Date
   @OneToMany(() => ProductImage, (image) => image.product, {
     cascade: true,
     onDelete: 'CASCADE',
   })
-  images: ProductImage[];
+  images?: ProductImage[];
+
   @OneToMany(() => CartEntity, (cart) => cart.product)
-  carts?: CartEntity
-  /** Thông số kỹ thuật chi tiết */
+  carts?: CartEntity[];
+
   @OneToOne(() => PhoneSpecification, (spec) => spec.product, {
     cascade: true,
     onDelete: 'CASCADE',
-    nullable:true
+    nullable: true,
   })
   @JoinColumn()
   specification?: PhoneSpecification;
