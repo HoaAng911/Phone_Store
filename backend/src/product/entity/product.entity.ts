@@ -13,6 +13,7 @@ import {
 import { PhoneSpecification } from './phone-specification.entity';
 import { ProductImage } from './product-image.entity';
 import { CartEntity } from 'src/cart/entity/cart.entity';
+import { Product_Review } from '../review/product-review.entity';
 
 export enum ProductCategory {
   PHONE = 'phone',
@@ -66,16 +67,14 @@ export class ProductEntity {
 
   @Column({ default: 0 })
   soldCount: number;
-
+ @Column({ type: 'decimal', precision: 2, scale: 1, default: 0.0 })
+  rating: number; 
+  @Column({ default: 0 }) reviewCount: number;
   @Column({ default: 0 })
   viewCount: number;
 
-  // Đánh giá
-  @Column({ type: 'decimal', precision: 2, scale: 1, default: 0.0 })
-  rating: number;
-
-  @Column({ default: 0 })
-  reviewCount: number;
+ @OneToMany(() => Product_Review, (review) => review.product)
+reviews: Product_Review[];
 
   // Trạng thái
   @Column({

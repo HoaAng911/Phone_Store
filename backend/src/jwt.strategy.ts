@@ -1,24 +1,42 @@
 // src/jwt.strategy.ts
-import { Injectable } from "@nestjs/common";
+import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { PassportStrategy } from "@nestjs/passport";
 import { ExtractJwt, Strategy } from "passport-jwt";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { UserEntity } from "./user/entity/user.entity";
 
 @Injectable()
-export class JWTStrategy extends PassportStrategy(Strategy, 'jwt') { // TÊN PHẢI LÀ 'jwt'
-  constructor(config: ConfigService) {
+export class JWTStrategy extends PassportStrategy(Strategy, 'jwt') {
+  constructor(
+    config: ConfigService,
+    @InjectRepository(UserEntity)
+    private userRepo: Repository<UserEntity>,
+  ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       secretOrKey: config.get<string>('JWT_SECRET')!,
     });
   }
+async validate(payload: any) {
+ 
+ const userId = payload.sub;
 
-  async validate(payload: any) {
-    console.log('JWT validate payload:', payload); // DEBUG
-    return {
-      userId: payload.sub,
-      email: payload.email,
-      role: payload.role,
-    };
+  if (isNaN(userId)) {
+    throw new UnauthorizedException('Token không hợp lệ');
   }
+
+  const user = await this.userRepo.findOne({
+    where: { id: userId },
+  });
+
+  if (!user) {
+    throw new UnauthorizedException('User không tồn tại!');
+  }
+
+  return user;
+}
+
+    
 }

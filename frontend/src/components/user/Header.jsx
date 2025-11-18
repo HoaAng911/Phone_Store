@@ -6,10 +6,12 @@ import { Badge } from '../ui/badge'
 import { Link } from 'react-router-dom' 
 import { useState } from 'react'
 import Logo from '../../assets/Logo.webp'
-
+import useCartStore from '@/store/useCart'
 export default function Header() {
   const [mobileMenu, setMobileMenu] = useState(false)
-
+    const totalQuantity = useCartStore((state) =>
+    state.cartItems.reduce((sum, item) => sum + item.quantity, 0)
+  );
   return (
     <header className="fixed top-0 left-0 right-0 z-30 bg-white border-b">
       
@@ -67,7 +69,7 @@ export default function Header() {
               <Link to="/cart">
                 <ShoppingCart className="w-5 h-5" />
                 <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center">
-                  3
+                  {totalQuantity}
                 </Badge>
               </Link>
             </Button>

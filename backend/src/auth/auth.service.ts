@@ -30,8 +30,7 @@ export class AuthService {
 const newUser = await this.userService.create({
     username: dto.username,
     email: dto.email,
-    password: dto.password, // create() sẽ tự hash
-    // role: 'user' (mặc định trong create)
+    password: dto.password,
   });
   const payload ={
     sub:newUser.id,

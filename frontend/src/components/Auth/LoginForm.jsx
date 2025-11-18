@@ -17,7 +17,7 @@ export default function LoginForm() {
       if (user.role === 'admin') {
         navigate('/admin/dashboard');
       } else {
-        navigate('/');
+        navigate('/profile');
       }
     } catch (err) {
       // error đã được xử lý trong store

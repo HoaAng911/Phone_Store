@@ -19,8 +19,16 @@ import Home from './pages/userPage/Home'
 import AboutUs from './pages/userPage/AboutUs'
 import Contact from './pages/userPage/Contact'
 import ProductDetailUser from './pages/userPage/ProductDetail'
+import CartPage from './pages/userPage/Cart'
+import useAuthStore from './store/useAuthStore'
+import { useEffect } from 'react'
+import Profile from './pages/userPage/Profile'
 function App() {
+  useEffect(() => {
+    useAuthStore.getState().init();
+  }, []);
   return (
+    
     <BrowserRouter>
       <Routes>
         {/* PUBLIC ROUTE */}
@@ -34,6 +42,8 @@ function App() {
          <Route path="/about" element={<AboutUs />} />
           <Route path="/contact" element={<Contact />} />
            <Route path="/product/:id" element={<ProductDetailUser />} />
+            <Route path="/cart" element={<CartPage />} />
+              <Route path="/profile" element={<Profile />} />
          </Route>
       
         {/* ADMIN ROUTES */}

@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import useProductStore from '../../store/useProduct';
-import FlashSaleCard from './FlashSaleCard';
+import FlashSaleCard from './Product/FlashSaleCard';
 import CountdownTimer from '../ui/CountdownTimer';
 
 export default function FlashSaleSection() {
@@ -10,7 +10,7 @@ export default function FlashSaleSection() {
     fetchFlashSalesProduct();
   }, [fetchFlashSalesProduct]);
 
-  console.log('FlashSaleSection:', { loading, count: flashSalesProduct?.length, data: flashSalesProduct });
+  
 
   // ĐANG TẢI
   if (loading) {

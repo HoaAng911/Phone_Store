@@ -1,3 +1,5 @@
+import { ProductReviewService } from './product/review/product-review.service';
+import { ProductReviewController } from './product/review/product-review.controller';
 import { OrderModule } from './order/order.module';
 import { OrderService } from './order/order.service';
 import { CartModule } from './cart/cart.module';
@@ -23,18 +25,19 @@ import { AddressEntity } from './user/entity/address.entity';
 import { CartEntity } from './cart/entity/cart.entity';
 import { OrderEntity } from './order/entity/order.entity';
 import { OrderItemEntity } from './order/entity/order-item.entity';
+import { Product_Review } from './product/review/product-review.entity';
 @Module({
   imports: [
-     
-        CartModule, 
-       
+
+    CartModule,
+
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'uploads'),
       serveRoot: '/uploads', // => http://localhost:3000/uploads/...
     }),
     ProductModule,
     ConfigModule.forRoot({ isGlobal: true }),
-    
+
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -45,20 +48,20 @@ import { OrderItemEntity } from './order/entity/order-item.entity';
         username: config.get('DB_USER'),
         password: config.get('DB_PASS'),
         database: config.get('DB_NAME'),
-        entities: [UserEntity, ProductEntity, ProductImage, PhoneSpecification,AddressEntity,CartEntity,OrderEntity,OrderItemEntity],
+        entities: [UserEntity,Product_Review, ProductEntity, ProductImage, PhoneSpecification, AddressEntity, CartEntity, OrderEntity, OrderItemEntity],
         synchronize: true,
       }),
     }),
-     UploadModule,
+    UploadModule,
     UserModule,
     AuthModule,
     OrderModule
-    
+
   ],
-  controllers: [ 
+  controllers: [
+    
     ProductController, AppController],
   providers: [
-        
-         AppService],
+    AppService],
 })
 export class AppModule { }

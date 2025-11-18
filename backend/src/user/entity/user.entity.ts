@@ -20,12 +20,13 @@ import {
 import { AddressEntity } from './address.entity';
 import { CartEntity } from 'src/cart/entity/cart.entity';
 import { OrderEntity } from 'src/order/entity/order.entity';
+import { Product_Review } from 'src/product/review/product-review.entity';
 
 @Entity('users')
 @Index(['phoneNumber'])
 export class UserEntity {
 
-  @PrimaryGeneratedColumn({type:'bigint'})
+  @PrimaryGeneratedColumn({ type: 'bigint' })
   id: string;
 
   @IsString({ message: 'Tên phải là chuỗi ký tự' })
@@ -45,7 +46,7 @@ export class UserEntity {
   @Column({ nullable: true, length: 20 })
   phoneNumber?: string;
 
-  /** Quan hệ 1-nhiều: 1 user có thể có nhiều địa chỉ */
+
   @OneToMany(() => AddressEntity, (address) => address.user)
   addresses: AddressEntity[];
   @OneToOne(() => CartEntity, (cart) => cart.user, { cascade: true, onDelete: 'CASCADE' })
@@ -53,23 +54,25 @@ export class UserEntity {
   cart: CartEntity;
 
 
-  /** Vai trò người dùng (user hoặc admin) */
+
   @OneToMany(() => OrderEntity, (orders) => orders.user, { cascade: false, eager: false })
   orders: OrderEntity;
   @IsIn(['user', 'admin'], { message: 'Vai trò phải là user hoặc admin' })
   @Column({ type: 'enum', enum: ['user', 'admin'], default: 'user' })
   role: 'user' | 'admin';
 
-  /** Lần đăng nhập gần nhất */
+  @OneToMany(() => Product_Review, (review) => review.user)
+  reviews: Product_Review[];
+
   @IsOptional()
   @Column({ nullable: true, type: 'timestamp' })
   lastLogin?: Date;
 
-  /** Thời điểm tạo user */
+
   @CreateDateColumn()
   createdAt: Date;
 
-  /** Thời điểm cập nhật gần nhất */
+
   @UpdateDateColumn()
   updatedAt: Date;
 }

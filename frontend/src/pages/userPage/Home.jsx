@@ -1,6 +1,6 @@
 import Banner from '@/components/user/Banner'
 import CategoryMenu from '@/components/user/CategoryMenu'
-import FeaturedProducts from '@/components/user/FeatureProduct'
+import FeaturedProducts from '../../components/user/Product/FeatureProduct'
 import FlashSaleSection from '@/components/user/FlashSaleSection'
 import React from 'react'
 

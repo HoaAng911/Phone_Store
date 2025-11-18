@@ -38,8 +38,7 @@ export class CartService {
   }
   async addToCart(userId: string, createCartDto: CreateCartDto): Promise<CartEntity> {
     try {
-      console.log('userId:', userId);
-      console.log('createCartDto:', createCartDto);
+    
       const { productId, quantity } = createCartDto
 
       if (!userId || !productId || quantity == null || quantity < 1) {

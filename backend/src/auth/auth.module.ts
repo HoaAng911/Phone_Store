@@ -9,10 +9,13 @@ import { config } from 'dotenv';
 import { JWTStrategy } from 'src/jwt.strategy';
 import { JwtAuthGuard } from 'src/jwt.guard';
 import { RolesGuard } from 'src/roles.guard';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { UserEntity } from 'src/user/entity/user.entity';
 
 @Module({
   imports:[
     forwardRef(() => UserModule),
+    TypeOrmModule.forFeature([UserEntity]),
     PassportModule,
     ConfigModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),

@@ -30,15 +30,16 @@ export class AuthController {
     return await this.authService.login(dto.email, dto.password);
   }
 
-  //  Lấy thông tin cá nhân (yêu cầu JWT)
+
   @UseGuards(JwtAuthGuard)
   @Get('profile')
   getProfile(@Request() req) {
-    // req.user được gán trong JwtStrategy (validate)
-    return this.authService.getProfile(req.user.userId);
+    
+    const userId = req.user.userId;
+    return this.authService.getProfile(userId);
   }
 
-  // Cập nhật hồ sơ người dùng (yêu cầu JWT)
+
   @UseGuards(JwtAuthGuard)
   @Put('profile')
   updateProfile(@Request() req, @Body() dto: UpdateProfileDto) {

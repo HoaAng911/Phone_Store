@@ -1,14 +1,18 @@
 import { create } from 'zustand';
 import axiosClient from '../api/axiosClient';
+import useAuthStore from './useAuthStore';
 
 const useCartStore = create((set, get) => ({
   cartItems: [],
   total: 0,
   loading: false,
 
-  // LẤY GIỎ HÀNG - OK
-  fetchCart: async (userId) => {
+
+  fetchCart: async () => {
     try {
+      const userId = useAuthStore.getState().user?.id;
+      console.log(userId)
+
       set({ loading: true });
       const res = await axiosClient.get(`/cart/${userId}`);
       set({ cartItems: res.data, loading: false });
@@ -19,19 +23,20 @@ const useCartStore = create((set, get) => ({
     }
   },
 
-  // THÊM VÀO GIỎ - ĐÃ SỬA ROUTE + CÚ PHÁP
   addToCart: async ({ userId, productId, quantity = 1 }) => {
     try {
       set({ loading: true });
       console.log("Gửi addToCart:", { userId, productId, quantity });
       const res = await axiosClient.post(
-        `/cart/${userId}`,
+        `/cart/${userId}`, {
+        productId, quantity
+      }
       );
       const newItem = res.data;
 
       set((state) => ({
         cartItems: [
-          // SỬA CÚ PHÁP: DẤU PHẨY SAI
+
           ...state.cartItems.filter(
             (item) => !(item.userId === userId && item.productId === productId)
           ),
@@ -49,12 +54,12 @@ const useCartStore = create((set, get) => ({
     }
   },
 
-  // CẬP NHẬT - ĐÃ SỬA ROUTE
+
   updateCartItem: async ({ userId, productId, quantity }) => {
     try {
       set({ loading: true });
       const res = await axiosClient.patch(
-        `/cart/${userId}`,           // ĐÃ SỬA
+        `/cart/${userId}`,
         { productId, quantity }
       );
       const updatedItem = res.data;
@@ -77,7 +82,7 @@ const useCartStore = create((set, get) => ({
     }
   },
 
-  // XÓA 1 MẶT HÀNG - OK
+
   removeFromCart: async (userId, productId) => {
     try {
       set({ loading: true });
@@ -96,7 +101,7 @@ const useCartStore = create((set, get) => ({
     }
   },
 
-  // TÍNH TỔNG - OK
+
   calculateTotal: async (userId) => {
     try {
       const res = await axiosClient.get(`/cart/${userId}/total`);
@@ -107,7 +112,7 @@ const useCartStore = create((set, get) => ({
     }
   },
 
-  // XÓA TOÀN BỘ - OK
+
   clearCart: async (userId) => {
     try {
       set({ loading: true });
@@ -120,7 +125,7 @@ const useCartStore = create((set, get) => ({
     }
   },
 
-  // RESET KHI LOGOUT - OK
+
   reset: () => set({ cartItems: [], total: 0, loading: false }),
 }));
 

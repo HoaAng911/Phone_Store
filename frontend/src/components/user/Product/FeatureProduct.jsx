@@ -1,6 +1,6 @@
 // src/components/ForYouSection.jsx
 import { useEffect } from "react";
-import useProductStore from "../../store/useProduct";
+import useProductStore from "../../../store/useProduct";
 import FeatureCard from "./FeatureCard"; // ĐÃ ĐỔI TÊN
 import { Skeleton } from "@/components/ui/skeleton";
 import { Swiper, SwiperSlide } from "swiper/react";
