@@ -36,7 +36,8 @@ const FeatureCard = ({ product }) => {
           <img
             src={mainImage}
             alt={product.name}
-            loading="lazy"
+            loading="eager"
+            fetchPriority="high"
             className="mx-auto h-full w-full object-contain transition-transform duration-300 group-hover:scale-105"
           />
 

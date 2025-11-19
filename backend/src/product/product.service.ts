@@ -223,6 +223,7 @@ export class ProductService {
     return await this.productRepo.find({
       where: { isFeatured: true },
       order: { createdAt: 'DESC' },
+      relations:['images'],
       take: limit
     })
   }

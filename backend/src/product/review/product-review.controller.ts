@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Param, Req, UseGuards, ValidationPipe } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, Req, UseGuards, ValidationPipe, Delete } from '@nestjs/common';
 import { ProductReviewService } from './product-review.service';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { JwtAuthGuard } from 'src/jwt.guard';
@@ -21,5 +21,9 @@ export class ProductReviewController {
   @Get(':productId')
   getProductReviews(@Param('productId') productId: string) {
     return this.reviewService.getReviews(productId);
+  }
+  @Delete(':reviewId')
+  delete(@Param('reviewId') reviewId: string) {
+    return this.reviewService.deleteReview(reviewId);
   }
 }

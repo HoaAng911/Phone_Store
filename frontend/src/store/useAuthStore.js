@@ -21,7 +21,7 @@ const useAuthStore = create((set) => ({
       axiosClient.defaults.headers.Authorization = `Bearer ${access_token}`;
 
       set({ user, token: access_token, loading: false });
-     
+
       return user;
     } catch (err) {
       const message = err.response?.data?.message || 'Đăng nhập thất bại';
@@ -61,7 +61,7 @@ const useAuthStore = create((set) => ({
 
   init: async () => {
     const token = localStorage.getItem('access_token');
-    console.log('INIT ĐANG DÙNG TOKEN:', token?.substring(0, 20) + '...');
+
     if (token) {
       axiosClient.defaults.headers.Authorization = `Bearer ${token}`;
       try {
@@ -79,9 +79,9 @@ const useAuthStore = create((set) => ({
     set({ loading: true });
     try {
       const user = await axiosClient.get('/auth/profile').then(res => res.data);
-      console.log('FETCHPROFILE ĐANG DÙNG HEADER:', axiosClient.defaults.headers.Authorization);
+
       set({ user, loading: false });
-      console.log(user)
+
     } catch (err) {
       set({ loading: false });
     }

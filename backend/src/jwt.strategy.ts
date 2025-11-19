@@ -19,24 +19,31 @@ export class JWTStrategy extends PassportStrategy(Strategy, 'jwt') {
       secretOrKey: config.get<string>('JWT_SECRET')!,
     });
   }
-async validate(payload: any) {
- 
- const userId = payload.sub;
+  async validate(payload: any) {
 
-  if (isNaN(userId)) {
-    throw new UnauthorizedException('Token không hợp lệ');
+    const userId = payload.sub;
+
+    if (isNaN(userId)) {
+      throw new UnauthorizedException('Token không hợp lệ');
+    }
+
+    const user = await this.userRepo.findOne({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User không tồn tại!');
+    }
+
+    return {
+      userId: user.id,           // Dòng này cứu cả thế giới
+      id: user.id,               // thêm cho chắc
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+      username: user.username,
+    };
   }
 
-  const user = await this.userRepo.findOne({
-    where: { id: userId },
-  });
 
-  if (!user) {
-    throw new UnauthorizedException('User không tồn tại!');
-  }
-
-  return user;
-}
-
-    
 }

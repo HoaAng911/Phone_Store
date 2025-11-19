@@ -55,12 +55,17 @@ export class ProductReviewService {
       reviewCount: totalReviews,
     });
   }
-
-  async getReviews(productId: string) {
-    return await this.reviewRepo.find({
-      where: { product: { id: productId } },
-      relations: ['user'],
-      order: { createdAt: 'DESC' },
-    });
+  async deleteReview(reviewId: string):Promise<void> {
+    const result = await this.reviewRepo.delete(reviewId)
+  if (result.affected === 0) {
+    throw new NotFoundException(`Không tìm thấy review với id ${reviewId}`);
   }
+}
+  async getReviews(productId: string) {
+  return await this.reviewRepo.find({
+    where: { product: { id: productId } },
+    relations: ['user'],
+    order: { createdAt: 'DESC' },
+  });
+}
 }

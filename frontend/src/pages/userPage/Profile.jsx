@@ -9,17 +9,31 @@ import {
   Clock, Shield, ChevronRight, Plus,
   Edit2, Trash2
 } from 'lucide-react';
+import useReviewStore from '@/store/useReviewStore';
 
 export default function Profile() {
   const { user, loading, init, fetchProfile } = useAuthStore();
   const [activeTab, setActiveTab] = useState('overview');
-
+  const {deleteReviews}=useReviewStore()
+  const [reviews, setReviews] = useState([]);
   useEffect(() => {
-  if (user) {
-    fetchProfile(); 
+  if (!user) {
+    fetchProfile();
   }
-}, []);
+}, [user, fetchProfile]);
+useEffect(() => {
+  if (user?.reviews) {
+    setReviews(user.reviews);
+  }
+}, [user]);
 
+const handleDeleteReview = (reviewId) => {
+  if (!window.confirm('Bạn có chắc muốn xóa đánh giá này không?')) return;
+
+
+  void deleteReviews(reviewId);
+  setReviews((prev) => prev.filter((r) => r.id !== reviewId));
+};
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -392,7 +406,7 @@ export default function Profile() {
 
             {user.reviews && user.reviews.length > 0 ? (
               <div className="space-y-4">
-                {user.reviews.map(review => (
+                {reviews.map(review => (
                   <div key={review.id} className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition">
                     <div className="flex justify-between items-start mb-3">
                       <div>
@@ -422,7 +436,10 @@ export default function Profile() {
                         <Edit2 className="w-4 h-4" />
                         Chỉnh sửa
                       </button>
-                      <button className="flex items-center gap-1 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition">
+                      <button
+                        className="flex items-center gap-1 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition"
+                        onClick={() => handleDeleteReview(review.id)}
+                      >
                         <Trash2 className="w-4 h-4" />
                         Xóa
                       </button>

@@ -87,7 +87,7 @@ const useProductStore = create((set) => ({
       set({ loading: true });
       const res = await axiosClient.get(`/products/${id}`);
       set({ product: res.data, loading: false });
-      console.log(" Fetched product ID:", id);
+      
     } catch (error) {
       console.error(" Lỗi khi tải sản phẩm:", error);
       set({ loading: false });
