@@ -6,6 +6,7 @@ import { ExtractJwt, Strategy } from "passport-jwt";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { UserEntity } from "./user/entity/user.entity";
+import { isUUID } from "validator";
 
 @Injectable()
 export class JWTStrategy extends PassportStrategy(Strategy, 'jwt') {
@@ -23,10 +24,9 @@ export class JWTStrategy extends PassportStrategy(Strategy, 'jwt') {
 
     const userId = payload.sub;
 
-    if (isNaN(userId)) {
-      throw new UnauthorizedException('Token không hợp lệ');
-    }
-
+     if (!isUUID(userId)) {   // <-- sửa chỗ này
+    throw new UnauthorizedException('Token không hợp lệ');
+  }
     const user = await this.userRepo.findOne({
       where: { id: userId },
     });

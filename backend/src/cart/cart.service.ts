@@ -38,39 +38,63 @@ export class CartService {
   }
   async addToCart(userId: string, createCartDto: CreateCartDto): Promise<CartEntity> {
     try {
-    
-      const { productId, quantity } = createCartDto
+      const { productId, quantity, selectedColor } = createCartDto;
 
-      if (!userId || !productId || quantity == null || quantity < 1) {
-        throw new BadRequestException('Du lieu khong hop le: UserId,ProductId,quantity')
+      if (!userId || !productId || !selectedColor?.trim()) {
+        throw new BadRequestException('Thiếu thông tin sản phẩm: userId, productId, color');
       }
-      //Kiem tra user va product ton tai
-      await this.checkUserAndProduct(userId, productId)
-      //Check xem san pham da co trong gio hang chua
-      const existingCartItem = await this.cartRepo.findOne({
-        where: { userId, productId }
-      })
-      if (existingCartItem) {
-        //Tang so luong neu san pham ton tai
-        existingCartItem.quantity = quantity
-        return this.cartRepo.save(existingCartItem)
+      if (quantity < 1) {
+        throw new BadRequestException('Số lượng không hợp lệ');
       }
-      //Tao moi neu chua co
-      const cartItem = this.cartRepo.create({ userId, productId, quantity })
-      return this.cartRepo.save(cartItem)
+
+      // Kiểm tra user
+      await this.validateUser(userId);
+      // Kiểm tra sản phẩm và lấy chi tiết
+       const product = await this.productRepo.findOne({
+      where: { id: productId },
+      relations: ['specification'],
+    });
+    if (!product) throw new NotFoundException('Sản phẩm không tồn tại');
+      // Kiểm tra màu
+      const availableColors = product.specification?.colors || [];
+      if (!availableColors.includes(selectedColor)) {
+        throw new BadRequestException(`Màu ${selectedColor} không tồn tại cho sản phẩm này`);
+      }
+
+      // Kiểm tra giỏ hàng đã có sản phẩm + màu này chưa
+      let cartItem = await this.cartRepo.findOne({
+        where: { userId, productId, selectedColor }
+      });
+
+      if (cartItem) {
+        
+        cartItem.quantity += quantity;
+        cartItem.updatedAt = new Date();
+        return await this.cartRepo.save(cartItem);
+      } else {
+       
+        const newCartItem = this.cartRepo.create({
+          userId,
+          productId,
+          quantity,
+          selectedColor
+        });
+        return await this.cartRepo.save(newCartItem);
+      }
+
     } catch (error) {
       if (error instanceof NotFoundException || error instanceof BadRequestException) {
         throw error;
       }
       throw new InternalServerErrorException('Lỗi khi thêm vào giỏ hàng: ' + error.message);
     }
-
   }
+
   async updateCartItem(userId: string, updateCartDto: UpdateCartDto): Promise<CartEntity> {
     try {
       const { productId, quantity } = updateCartDto
       //Kiem tra user va product co ton tai hay ko
-      await this.checkUserAndProduct(userId, productId)
+      this.checkUserAndProduct(userId, productId)
       // Kiem tra gio hang
       const cartItem = await this.cartRepo.findOne({
         where: { userId, productId }

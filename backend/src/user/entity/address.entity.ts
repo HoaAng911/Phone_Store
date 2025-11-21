@@ -14,7 +14,7 @@ import { UserEntity } from './user.entity';
 
 @Entity('addresses')
 export class AddressEntity {
-  @PrimaryGeneratedColumn({type:'bigint'})
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   // === BẮT BUỘC ===

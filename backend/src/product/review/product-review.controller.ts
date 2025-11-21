@@ -14,8 +14,10 @@ export class ProductReviewController {
     @Req() req,
     @Body(new ValidationPipe({ whitelist: true, transform: true })) dto: CreateReviewDto
   ) {
-    const user: UserEntity = req.user;
-    return this.reviewService.createReview(user, dto);
+     console.log("🔎 REQ.USER: ", req.user); 
+    const userId = req.user.userId;
+  
+    return this.reviewService.createReview(userId, dto);
   }
 
   @Get(':productId')

@@ -40,7 +40,14 @@ const newUser = await this.userService.create({
   const access_token = this.jwtService.sign(payload);
   return {
     access_token,
-    user: newUser,
+    user: {
+      id:newUser.id,
+      username: newUser.username,
+      email: newUser.email,
+      phoneNumber: newUser.phoneNumber,
+      role: newUser.role,
+      createdAt: newUser.createdAt,
+    },
   };
   }
 

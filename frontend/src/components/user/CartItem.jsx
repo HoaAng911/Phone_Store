@@ -54,7 +54,7 @@ const CartItem = ({ item }) => {
         <h3 className="font-semibold text-lg line-clamp-2">{product.name}</h3>
         <p className="text-sm text-gray-500">{product.brand}</p>
         <div className="text-xs text-gray-600">
-          <p>Màu: {product.specification?.colors?.[0] || 'Chưa có'}</p>
+          <p>Màu: {item.selectedColor|| 'Chưa có'}</p>
           <p>{product.specification?.screenSize || ''} • {product.specification?.storage || ''}</p>
         </div>
 

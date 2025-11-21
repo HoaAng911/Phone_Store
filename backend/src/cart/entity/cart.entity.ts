@@ -5,25 +5,24 @@ import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGenerat
 
 @Entity('cart')
 export class CartEntity {
-  @PrimaryGeneratedColumn({type:'bigint'})
+  @PrimaryGeneratedColumn('uuid')
   id: string
-  @Column({type:'bigint',nullable:false})
+  @Column({ type: 'bigint', nullable: false })
   userId: string
-  @Column({type:'bigint',nullable:false})
+  @Column({ type: 'bigint', nullable: false })
   productId: string
   @Column({ default: 1 })
   quantity: number
+  @Column({ type: 'varchar', length: 50, nullable: false })
+  selectedColor:string
   @ManyToOne(() => UserEntity, (user) => user.cart)
   @JoinColumn({ name: 'userId' })
   user: UserEntity
   @ManyToOne(() => ProductEntity, (product) => product.carts)
   @JoinColumn({ name: 'productId' })
   product: ProductEntity
-  /** Thời điểm tạo */
   @CreateDateColumn()
   createdAt: Date;
-
-  /** Thời điểm cập nhật gần nhất */
   @UpdateDateColumn()
   updatedAt: Date;
 }

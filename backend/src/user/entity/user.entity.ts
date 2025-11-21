@@ -21,14 +21,14 @@ import { AddressEntity } from './address.entity';
 import { CartEntity } from 'src/cart/entity/cart.entity';
 import { OrderEntity } from 'src/order/entity/order.entity';
 import { Product_Review } from 'src/product/review/product-review.entity';
-
-@Entity('users')
+@Index('idx_email', ['email'])
 @Index(['phoneNumber'])
+@Entity('users')
+
 export class UserEntity {
 
-  @PrimaryGeneratedColumn({ type: 'bigint' })
+  @PrimaryGeneratedColumn('uuid')
   id: string;
-
   @IsString({ message: 'Tên phải là chuỗi ký tự' })
   @Column({ length: 100 })
   username: string;
@@ -52,8 +52,6 @@ export class UserEntity {
   @OneToOne(() => CartEntity, (cart) => cart.user, { cascade: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'cartId' })
   cart: CartEntity;
-
-
 
   @OneToMany(() => OrderEntity, (orders) => orders.user, { cascade: false, eager: false })
   orders: OrderEntity;

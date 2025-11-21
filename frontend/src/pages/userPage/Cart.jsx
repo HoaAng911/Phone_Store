@@ -2,10 +2,12 @@
 import React, { useEffect } from 'react';
 import useCartStore from '../../store/useCart';
 import CartItem from '../../components/user/CartItem';
+import useAuthStore from '@/store/useAuthStore';
 
 const CartPage = () => {
   const { cartItems, total, loading, fetchCart, clearCart } = useCartStore();
-  const userId = "user123"; // <-- Thay bằng useAuth
+const { user } = useAuthStore();
+const userId = user?.id;
 
   useEffect(() => {
     fetchCart(userId);

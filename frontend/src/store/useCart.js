@@ -11,8 +11,9 @@ const useCartStore = create((set, get) => ({
   fetchCart: async () => {
     try {
       const userId = useAuthStore.getState().user?.id;
-      console.log(userId)
-
+      if (!userId) {
+        console.warn('fetchCart: userId chưa có');
+      }
       set({ loading: true });
       const res = await axiosClient.get(`/cart/${userId}`);
       set({ cartItems: res.data, loading: false });
@@ -23,13 +24,13 @@ const useCartStore = create((set, get) => ({
     }
   },
 
-  addToCart: async ({ userId, productId, quantity = 1 }) => {
+  addToCart: async ({ userId, productId, quantity = 1, selectedColor }) => {
     try {
       set({ loading: true });
-      console.log("Gửi addToCart:", { userId, productId, quantity });
+
       const res = await axiosClient.post(
         `/cart/${userId}`, {
-        productId, quantity
+        productId, quantity, selectedColor
       }
       );
       const newItem = res.data;

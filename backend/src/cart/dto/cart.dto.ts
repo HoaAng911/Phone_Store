@@ -1,4 +1,4 @@
-import { IsUUID, IsInt, Min, IsOptional } from 'class-validator';
+import { IsUUID, IsInt, Min, IsOptional, IsNotEmpty, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateCartDto {
@@ -10,7 +10,10 @@ export class CreateCartDto {
   @Min(1, { message: 'quantity phải lớn hơn hoặc bằng 1' })
   @IsOptional()
   @Type(() => Number)
-  quantity?: number = 1;
+  quantity: number = 1;
+  @IsNotEmpty({ message: 'Vui lòng chọn màu sắc' })
+  @IsString({ message: 'Màu sắc không hợp lệ' })
+  selectedColor: string;
 }
 
 export class UpdateCartDto {
@@ -22,4 +25,7 @@ export class UpdateCartDto {
   @Min(1, { message: 'quantity phải lớn hơn hoặc bằng 1' })
   @Type(() => Number)
   quantity?: number;
+  @IsNotEmpty({ message: 'Vui lòng chọn màu sắc' })
+  @IsString({ message: 'Màu sắc không hợp lệ' })
+  selectedColor: string;
 }
