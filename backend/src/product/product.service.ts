@@ -48,7 +48,9 @@ export class ProductService {
       search,
       brand,
       priceMax,
+      priceMin,
       sort,
+      category,
     } = query;
 
     const skip = (page - 1) * limit;
@@ -65,12 +67,16 @@ export class ProductService {
       });
     }
 
-
+    if (category) {
+      qb.andWhere('product.category = :category', { category });
+    }
     if (brand) {
       qb.andWhere('product.brand = :brand', { brand });
     }
 
-
+    if (priceMin) {
+      qb.andWhere('product.price >= :priceMin', { priceMin });
+    }
     if (priceMax) {
       qb.andWhere('product.price <= :priceMax', { priceMax });
     }
@@ -163,7 +169,7 @@ export class ProductService {
 
   async getProductStat() {
     const totalProduct = await this.productRepo.count();
-
+   
     const stockData = await this.productRepo
       .createQueryBuilder('product')
       .select('SUM(product.stock)', 'totalStock')
@@ -180,7 +186,7 @@ export class ProductService {
     const outStockCount = await this.productRepo.count({
       where: { stock: 0 },
     });
-
+ 
     const brandStats = await this.productRepo
       .createQueryBuilder('product')
       .select('product.brand', 'brand')
@@ -192,7 +198,6 @@ export class ProductService {
       brand: r.brand,
       count: Number(r.count),
     }));
-
     return {
       totalProduct,
       totalStock,
@@ -201,6 +206,7 @@ export class ProductService {
       outStockCount,
       resultBrand,
     };
+
   }
   getCategories(): string[] {
     return Object.values(ProductCategory)
@@ -223,45 +229,45 @@ export class ProductService {
     return await this.productRepo.find({
       where: { isFeatured: true },
       order: { createdAt: 'DESC' },
-      relations:['images'],
+      relations: ['images'],
       take: limit
     })
   }
- async getFlashSale(limit = 6): Promise<ProductEntity[]> {
-  const now = new Date();
+  async getFlashSale(limit = 6): Promise<ProductEntity[]> {
+    const now = new Date();
 
-  const qb = this.productRepo
-    .createQueryBuilder('product')
-    .leftJoinAndSelect('product.images', 'images')
-    .where(
-      `(
+    const qb = this.productRepo
+      .createQueryBuilder('product')
+      .leftJoinAndSelect('product.images', 'images')
+      .where(
+        `(
         (product.discountPercent >= :minDiscount AND product.flashSaleUntil > :now AND product.stock >= :minStock)
         OR
         (product.discountPercent >= :minDiscount AND product.flashSaleUntil IS NULL AND product.stock >= :minStock)
       )`,
-      {
-        minDiscount: 15,
-        now,
-        minStock: 5,
-      },
-    )
-    .orderBy('product.discountPercent', 'DESC')
-    .addOrderBy('product.createdAt', 'DESC')
-    .select([
-      'product.id',
-      'product.name',
-      'product.price',
-      'product.originalPrice',
-      'product.discountPercent',
-      'product.flashSaleUntil',
-      'product.stock',
-      'product.createdAt',
-      'images.url',
-    ])
-    .take(limit);
+        {
+          minDiscount: 15,
+          now,
+          minStock: 5,
+        },
+      )
+      .orderBy('product.discountPercent', 'DESC')
+      .addOrderBy('product.createdAt', 'DESC')
+      .select([
+        'product.id',
+        'product.name',
+        'product.price',
+        'product.originalPrice',
+        'product.discountPercent',
+        'product.flashSaleUntil',
+        'product.stock',
+        'product.createdAt',
+        'images.url',
+      ])
+      .take(limit);
 
-  return await qb.getMany();
-}
+    return await qb.getMany();
+  }
   async toggleFlashSale(id: string, hours?: number): Promise<ProductEntity> {
     const product = await this.findOne(id)
 

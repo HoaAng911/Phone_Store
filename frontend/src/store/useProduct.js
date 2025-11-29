@@ -1,70 +1,89 @@
 import { create } from "zustand";
-import axiosClient from "../api/axiosClient";
+import axiosClient from "../lib/client/axiosClient";
 
-
-/**
- * Zustand store dùng để quản lý state sản phẩm:
- *  - Danh sách sản phẩm (products)
- *  - Chi tiết sản phẩm (product)
- *  - Trạng thái tải dữ liệu (loading)
- *  - Phân trang (page, totalPage)
- */
 const useProductStore = create((set) => ({
   products: [],
   categories: [],
   product: null,
   loading: false,
   page: 1,
+  total: 0,
   totalPage: 1,
   featuresProduct: [],
   flashSalesProduct: [],
 
-
-  fetchFlashSalesProduct: async () => {
+  fetchFilteredProducts: async ({ category, minPrice, maxPrice, sort, page = 1, limit = 15 }) => {
     try {
-      set({ loading: true })
-      const res = await axiosClient.get("/products/flash-sale?limit=6")
+      set({ loading: true });
 
-      set({ flashSalesProduct: res.data, loading: false })
+      // Chuẩn bị params gửi lên backend
+      const params = { page, limit };
+      if (category && category !== "all") params.category = category;
+      if (minPrice > 0) params.priceMin = minPrice;
+      if (maxPrice < 100000000) params.priceMax = maxPrice;
+      if (sort && sort !== "newest") params.sort = sort;
+
+      const res = await axiosClient.get("/products", { params });
+
+      const data = res.data.data || [];
+      const total = res.data.total || 0;
+      const totalPage = Math.ceil(total / limit);
+
+      set({
+        products: data,
+        total,
+        page,
+        limit,
+        totalPage,
+        loading: false
+      });
+
     } catch (error) {
-      console.error(" Lỗi khi tải sản phẩm:", error);
+      console.error("Lỗi khi lọc sản phẩm:", error);
       set({ loading: false });
     }
   },
+
+  fetchFlashSalesProduct: async () => {
+    try {
+      set({ loading: true });
+      const res = await axiosClient.get("/products/flash-sale?limit=6");
+      set({ flashSalesProduct: res.data, loading: false });
+    } catch (error) {
+      console.error("Lỗi khi tải flash sale:", error);
+      set({ loading: false });
+    }
+  },
+
   fetchFeaturesProduct: async () => {
     try {
-      set({ loading: true })
-      const res = await axiosClient.get("/products/featured")
-
-      set({ featuresProduct: res.data, loading: false })
+      set({ loading: true });
+      const res = await axiosClient.get("/products/featured");
+      set({ featuresProduct: res.data, loading: false });
     } catch (error) {
-      console.error(" Lỗi khi tải  sản phẩm:", error);
+      console.error("Lỗi khi tải sản phẩm nổi bật:", error);
       set({ loading: false });
     }
   },
 
   fetchCategories: async () => {
     try {
-      set({ loading: true })
-      const res = await axiosClient.get("/products/categories")
+      set({ loading: true });
+      const res = await axiosClient.get("/products/categories");
       const uniqueCategories = Array.from(new Set(res.data));
-
-      set({ categories: uniqueCategories, loading: false })
+      set({ categories: uniqueCategories, loading: false });
     } catch (error) {
-      console.error(" Lỗi khi tải danh mục sản phẩm:", error);
+      console.error("Lỗi khi tải danh mục:", error);
       set({ loading: false });
     }
-
   },
 
   fetchProducts: async (page = 1) => {
     try {
       set({ loading: true });
-      // Gọi API lấy sản phẩm với query params: page & limit
       const res = await axiosClient.get("/products", {
         params: { page, limit: 5 },
       });
-
       const result = res.data;
       set({
         products: result.data,
@@ -73,85 +92,58 @@ const useProductStore = create((set) => ({
         loading: false,
       });
     } catch (error) {
-      console.error(" Lỗi khi tải danh sách sản phẩm:", error);
+      console.error("Lỗi khi tải danh sách sản phẩm:", error);
       set({ loading: false });
     }
   },
 
-  /**
-   *  Lấy chi tiết 1 sản phẩm theo ID
-   * @param {string} id - ID sản phẩm
-   */
   fetchProductById: async (id) => {
     try {
       set({ loading: true });
       const res = await axiosClient.get(`/products/${id}`);
       set({ product: res.data, loading: false });
-      
     } catch (error) {
-      console.error(" Lỗi khi tải sản phẩm:", error);
+      console.error("Lỗi khi tải sản phẩm:", error);
       set({ loading: false });
     }
   },
 
-  /**
-   *  Tạo mới sản phẩm
-   * @param {object} data - Dữ liệu sản phẩm cần tạo
-   */
   createProduct: async (data) => {
     try {
       const res = await axiosClient.post("/products", data, {
         headers: { "Content-Type": "application/json" },
       });
-
-      //  Sau khi tạo thành công, thêm sản phẩm mới vào danh sách
       set((state) => ({
         products: [...state.products, res.data],
       }));
-
       return res.data;
     } catch (error) {
-      console.error(" Lỗi khi tạo sản phẩm:", error);
-      throw error; // ném lỗi ra ngoài để component xử lý
+      console.error("Lỗi khi tạo sản phẩm:", error);
+      throw error;
     }
   },
 
-  /**
-   *  Cập nhật sản phẩm
-   * @param {string} id - ID sản phẩm cần cập nhật
-   * @param {object} data - Dữ liệu mới
-   */
   updateProduct: async (id, data) => {
     try {
-      const res = await axiosClient.patch(`/products/${id}`, data, {
-        headers: { "Content-Type": "application/json" },
-      });
-
-      //  Cập nhật lại sản phẩm trong danh sách tại client
+      const res = await axiosClient.patch(`/products/${id}`, data);
       set((state) => ({
         products: state.products.map((p) =>
           p.id === id ? res.data : p
         ),
       }));
     } catch (error) {
-      console.error(" Lỗi khi cập nhật sản phẩm:", error);
+      console.error("Lỗi khi cập nhật sản phẩm:", error);
     }
   },
 
-  /**
-   *  Xóa sản phẩm
-   * @param {string} id - ID sản phẩm cần xóa
-   */
   deleteProduct: async (id) => {
     try {
       await axiosClient.delete(`/products/${id}`);
-
-      //  Lọc bỏ sản phẩm đã xóa khỏi danh sách trong state
       set((state) => ({
         products: state.products.filter((p) => p.id !== id),
       }));
     } catch (error) {
-      console.error(" Lỗi khi xóa sản phẩm:", error);
+      console.error("Lỗi khi xóa sản phẩm:", error);
     }
   },
 
@@ -159,27 +151,25 @@ const useProductStore = create((set) => ({
     try {
       const formData = new FormData();
       formData.append("file", file);
-
       const res = await axiosClient.post("/upload", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-
       return res.data;
     } catch (error) {
-      console.error(" Lỗi khi upload ảnh:", error);
-      throw error;
-    }
-  },
-  getProductStat: async () => {
-    try {
-      const res = await axiosClient.get("/products/stats")
-      return res.data
-    } catch (error) {
-      console.error(" Lỗi khi gọi thống kê:", error);
+      console.error("Lỗi khi upload ảnh:", error);
       throw error;
     }
   },
 
+  getProductStat: async () => {
+    try {
+      const res = await axiosClient.get("/products/stats");
+      return res.data;
+    } catch (error) {
+      console.error("Lỗi khi gọi thống kê:", error);
+      throw error;
+    }
+  },
 
   setPage: (newPage) => set({ page: newPage }),
 }));

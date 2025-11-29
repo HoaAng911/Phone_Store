@@ -1,7 +1,7 @@
 import { create } from 'zustand'
-import axiosClient from '../api/axiosClient'
+import axiosClient from '../lib/client/axiosClient'
 
-const useOrderStore = create((set,get) => ({
+const useOrderStore = create((set, get) => ({
 
   orders: [],
   total: 0,
@@ -17,12 +17,12 @@ const useOrderStore = create((set,get) => ({
       set({ loading: false });
     }
   },
- 
-  reset:()=>{
+
+  reset: () => {
     set({
-      cartItems:[],
-      total:0,
-      loading:false,
+      cartItems: [],
+      total: 0,
+      loading: false,
     })
   }
 }))

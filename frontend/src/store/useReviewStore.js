@@ -1,6 +1,6 @@
 // src/store/useReviewStore.js
 import { create } from "zustand";
-import axiosClient from "../api/axiosClient";
+import axiosClient from "../lib/client/axiosClient";
 
 const useReviewStore = create((set) => ({
   reviews: [],
@@ -24,23 +24,23 @@ const useReviewStore = create((set) => ({
   // Tạo review
   createReview: async (data) => {
     try {
-     
+
       const res = await axiosClient.post("/reviews", data);
-     
+
       return res.data;
     } catch (error) {
       console.error("Lỗi khi tạo review:", error);
       throw error;
     }
   },
-    deleteReviews: async (reviewId) => {
+  deleteReviews: async (reviewId) => {
     try {
       set({ loading: true });
-       await axiosClient.delete(`/reviews/${reviewId}`);
+      await axiosClient.delete(`/reviews/${reviewId}`);
       set((state) => ({
-      reviews: state.reviews.filter((review) => review.reviewId !== reviewId),
-      loading: false,
-    }));
+        reviews: state.reviews.filter((review) => review.reviewId !== reviewId),
+        loading: false,
+      }));
     } catch (err) {
       console.error("Lỗi khi xóa review:", err);
       set({ loading: false });

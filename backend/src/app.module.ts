@@ -1,3 +1,4 @@
+import { ArticleModule } from './article/article.module';
 import { ProductReviewService } from './product/review/product-review.service';
 import { ProductReviewController } from './product/review/product-review.controller';
 import { OrderModule } from './order/order.module';
@@ -26,8 +27,11 @@ import { CartEntity } from './cart/entity/cart.entity';
 import { OrderEntity } from './order/entity/order.entity';
 import { OrderItemEntity } from './order/entity/order-item.entity';
 import { Product_Review } from './product/review/product-review.entity';
+import { Article } from './article/article.entity';
+import { ArticlesService } from './article/article.service';
 @Module({
   imports: [
+        
 
     CartModule,
 
@@ -48,15 +52,17 @@ import { Product_Review } from './product/review/product-review.entity';
         username: config.get('DB_USER'),
         password: config.get('DB_PASS'),
         database: config.get('DB_NAME'),
-        entities: [UserEntity,Product_Review, ProductEntity, ProductImage, PhoneSpecification, AddressEntity, CartEntity, OrderEntity, OrderItemEntity],
+        entities: [UserEntity,Product_Review, ProductEntity, 
+          ProductImage, PhoneSpecification, AddressEntity,
+           CartEntity, OrderEntity, OrderItemEntity,Article],
         synchronize: true,
       }),
     }),
     UploadModule,
     UserModule,
     AuthModule,
-    OrderModule
-
+    OrderModule,
+    ArticleModule
   ],
   controllers: [
     

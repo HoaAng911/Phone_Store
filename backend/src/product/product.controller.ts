@@ -23,7 +23,7 @@ import { ToggleFlashSaleDto } from './dto/toggleFlashSale.dto';
 @Controller('products')
 @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
 export class ProductController {
-  constructor(private readonly productService: ProductService) {}
+  constructor(private readonly productService: ProductService) { }
 
   // === [POST] TẠO SẢN PHẨM ===
   @Post()
@@ -54,7 +54,11 @@ export class ProductController {
   getFlashSale(@Query('limit', new ParseIntPipe({ optional: true })) limit = 6) {
     return this.productService.getFlashSale(limit);
   }
-
+  // === [GET] THỐNG KÊ ===
+  @Get('stats')
+  getProductStat() {
+    return this.productService.getProductStat();
+  }
   // === [GET] CHI TIẾT SẢN PHẨM ===
   @Get(':id')
   async findOne(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
@@ -63,17 +67,13 @@ export class ProductController {
     return product;
   }
 
+
   // === [GET] TẤT CẢ SẢN PHẨM (FILTER) ===
   @Get()
   findAll(@Query() query: ProductQueryDto) {
     return this.productService.findAll(query);
   }
 
-  // === [GET] THỐNG KÊ ===
-  @Get('stats')
-  getProductStat() {
-    return this.productService.getProductStat();
-  }
 
   // === [PATCH] CẬP NHẬT SẢN PHẨM ===
   @Patch(':id')

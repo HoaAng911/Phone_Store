@@ -1,6 +1,6 @@
 // src/store/useUserStore.js
 import { create } from 'zustand';
-import axiosClient from '../api/axiosClient';
+import axiosClient from '../lib/client/axiosClient';
 
 const useUserStore = create((set, get) => ({
   users: [],

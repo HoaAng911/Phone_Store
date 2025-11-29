@@ -1,0 +1,127 @@
+src                                   
+├─ api                                
+│  └─ axiosClient.js                  
+├─ app                                
+│  └─ routes                          
+│     ├─ adminRoutes.jsx              
+│     ├─ authRoutes.jsx               
+│     ├─ index.jsx                    
+│     ├─ publicRoutes.jsx             
+│     └─ userRoutes.jsx               
+├─ assets                             
+│  ├─ about.jpg                       
+│  ├─ banner1.webp                    
+│  ├─ banner2.webp                    
+│  ├─ banner3.webp                    
+│  ├─ contact_img.png                 
+│  ├─ Logo.webp                       
+│  └─ react.svg                       
+├─ component                          
+│  ├─ layout                          
+│  │  ├─ AdminLayout.jsx              
+│  │  ├─ Footer.jsx                   
+│  │  ├─ Header.jsx                   
+│  │  └─ UserLayout.jsx               
+│  ├─ section                         
+│  │  ├─ ArticleSection.jsx           
+│  │  ├─ Banner.jsx                   
+│  │  ├─ CategoryMenu.jsx             
+│  │  └─ FlashSaleSection.jsx         
+│  └─ ui                              
+│     ├─ aspect-ratio.jsx             
+│     ├─ avatar.jsx                   
+│     ├─ badge.jsx                    
+│     ├─ button.jsx                   
+│     ├─ card.jsx                     
+│     ├─ checkbox.jsx                 
+│     ├─ collapsible.jsx              
+│     ├─ CountdownTimer.jsx           
+│     ├─ form.jsx                     
+│     ├─ input.jsx                    
+│     ├─ label.jsx                    
+│     ├─ scroll-area.jsx              
+│     ├─ select.jsx                   
+│     ├─ separator.jsx                
+│     ├─ skeleton.jsx                 
+│     ├─ table.jsx                    
+│     ├─ textarea.jsx                 
+│     └─ tooltip.jsx                  
+├─ features                           
+│  ├─ admin-orders                    
+│  ├─ admin-products                  
+│  │  ├─ FormCreateProduct            
+│  │  │  ├─ AddProductForm.jsx        
+│  │  │  ├─ ImageUpload.jsx           
+│  │  │  └─ SpecificationSection.jsx  
+│  │  ├─ FormUpdateProduct            
+│  │  │  ├─ BasicInfoSection.jsx      
+│  │  │  ├─ ColorInputList.jsx        
+│  │  │  ├─ EditProductForm.jsx       
+│  │  │  ├─ ImageUpload.jsx           
+│  │  │  ├─ SpecificationFields.jsx   
+│  │  │  └─ SpecificationSection.jsx  
+│  │  ├─ AddUserModal.jsx             
+│  │  ├─ ProtectedRoute.jsx           
+│  │  └─ Sidebar.jsx                  
+│  ├─ admin-users                     
+│  ├─ articles                        
+│  ├─ auth                            
+│  │  ├─ api                          
+│  │  ├─ components                   
+│  │  │  ├─ LoginForm.jsx             
+│  │  │  └─ RegisterForm.jsx          
+│  │  ├─ hooks                        
+│  │  ├─ pages                        
+│  │  └─ store                        
+│  │     └─ useAuthStore.js           
+│  ├─ cart                            
+│  │  ├─ Cart.jsx                     
+│  │  └─ CartItem.jsx                 
+│  ├─ checkout                        
+│  └─ products                        
+│     ├─ product-category             
+│     │  ├─ hooks                     
+│     │  │  └─ useProductFilters.js   
+│     │  ├─ ProductCard.jsx           
+│     │  ├─ ProductFilterSidebar.jsx  
+│     │  ├─ ProductGrid.jsx           
+│     │  └─ ProductSortBar.jsx        
+│     ├─ FeatureCard.jsx              
+│     ├─ FeatureProduct.jsx           
+│     ├─ FlashSaleCard.jsx            
+│     ├─ ProductReview.jsx            
+│     └─ ProductSpecifications.jsx    
+├─ lib                                
+│  └─ utils.js                        
+├─ pages                              
+│  ├─ adminPage                       
+│  │  ├─ CartPage.jsx                 
+│  │  ├─ DashBoard.jsx                
+│  │  ├─ DashBoardChart.jsx           
+│  │  ├─ OrderList.jsx                
+│  │  ├─ ProductDetail.jsx            
+│  │  ├─ ProductList.jsx              
+│  │  └─ UserList.jsx                 
+│  └─ userPage                        
+│     ├─ Article                      
+│     │  ├─ ArticleDetail.jsx         
+│     │  └─ ArticleListPage.jsx       
+│     ├─ Product                      
+│     │  ├─ ProductCategoryPage.jsx   
+│     │  └─ ProductDetail.jsx         
+│     ├─ AboutUs.jsx                  
+│     ├─ Checkout.jsx                 
+│     ├─ Contact.jsx                  
+│     ├─ Home.jsx                     
+│     └─ Profile.jsx                  
+├─ store                              
+│  ├─ useArticleStore.js              
+│  ├─ useCart.js                      
+│  ├─ useOrderStore.js                
+│  ├─ useProduct.js                   
+│  ├─ useReviewStore.js               
+│  └─ useUserStore.js                 
+├─ App.css                            
+├─ App.jsx                            
+├─ index.css                          
+└─ main.jsx                           
