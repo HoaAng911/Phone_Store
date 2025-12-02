@@ -1,14 +1,14 @@
 export default function FlashSaleCard({ product }) {
-  const imageUrl = 
-    product.images?.[0]?.url || 
+  const imageUrl =
+    product.images?.[0]?.url ||
     'https://via.placeholder.com/300?text=No+Image';
 
   return (
     <a
-      href={`/san-pham/${product.id}`}
+      href={`/product/${product.id}`}
       className="block group"
     >
-      <div className="bg-white rounded-lg overflow-hidden border border-gray-200 hover:border-gray-300 transition-all duration-300 h-full hover:shadow-lg">
+      <div className="bg-white rounded-none overflow-hidden border border-gray-200 hover:border-gray-300 transition-all duration-300 h-full hover:shadow-lg">
         <div className="relative aspect-square overflow-hidden bg-gray-50">
           <img
             src={imageUrl}

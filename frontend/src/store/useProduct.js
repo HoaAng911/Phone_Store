@@ -11,6 +11,7 @@ const useProductStore = create((set) => ({
   totalPage: 1,
   featuresProduct: [],
   flashSalesProduct: [],
+  newProduct:[],
 
   fetchFilteredProducts: async ({ category, minPrice, maxPrice, sort, page = 1, limit = 15 }) => {
     try {
@@ -43,7 +44,16 @@ const useProductStore = create((set) => ({
       set({ loading: false });
     }
   },
-
+  fetchNewProduct: async () => {
+    try {
+      set({ loading: true });
+      const res = await axiosClient.get("/products/new");
+      set({ newProduct: res.data, loading: false });
+    } catch (error) {
+      console.error("Lỗi khi tải new product:", error);
+      set({ loading: false });
+    }
+  },
   fetchFlashSalesProduct: async () => {
     try {
       set({ loading: true });

@@ -73,7 +73,10 @@ export class ProductEntity {
   @Column({ default: 0 })
   viewCount: number;
 
-  @OneToMany(() => Product_Review, (review) => review.product)
+  @OneToMany(() => Product_Review, (review) => review.product,{
+    cascade: true
+  })
+  
   reviews: Product_Review[];
 
   // Trạng thái

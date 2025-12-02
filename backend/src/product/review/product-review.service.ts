@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Product_Review } from './product-review.entity';
@@ -10,62 +14,81 @@ import { UserEntity } from '../../user/entity/user.entity';
 export class ProductReviewService {
   constructor(
     @InjectRepository(Product_Review)
-    private reviewRepo: Repository<Product_Review>,
+    private readonly reviewRepo: Repository<Product_Review>,
 
     @InjectRepository(ProductEntity)
-    private productRepo: Repository<ProductEntity>,
-  ) { }
+    private readonly productRepo: Repository<ProductEntity>,
+  ) {}
 
-  // Thêm review
+
   async createReview(user: UserEntity, dto: CreateReviewDto) {
-    const product = await this.productRepo.findOne({
-      where: { id: dto.productId },
-    });
-
-    if (!product) throw new NotFoundException('Sản phẩm không tồn tại!');
+    const product = await this.productRepo.findOneBy({ id: dto.productId });
+    if (!product) {
+      throw new NotFoundException('Sản phẩm không tồn tại!');
+    }
 
     const review = this.reviewRepo.create({
       rating: dto.rating,
-      comment: dto.comment?.trim() || "",
+      comment: dto.comment?.trim() ?? '',
       user,
       product,
     });
 
     await this.reviewRepo.save(review);
-
-    await this.updateProductRating(product.id);
+    await this.updateProductRating(dto.productId);
 
     return review;
   }
 
-  // Tính rating trung bình
-  async updateProductRating(productId: string) {
-    const reviews = await this.reviewRepo.find({
+
+  async getReviews(productId: string) {
+    return this.reviewRepo.find({
       where: { product: { id: productId } },
+      relations: ['user'],
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  
+  async deleteReview(reviewId: string): Promise<void> {
+   
+    const review = await this.reviewRepo.findOne({
+      where: { id: reviewId },
+      relations: ['product'],
     });
 
-    const totalReviews = reviews.length;
-    const avgRating =
-      totalReviews === 0
-        ? 0
-        : reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews;
+    if (!review) {
+      throw new NotFoundException(`Không tìm thấy đánh giá với id ${reviewId}`);
+    }
+
+    const productId = review.product.id;
+
+  
+    const result = await this.reviewRepo.delete(reviewId);
+    if (!result.affected) {
+      throw new BadRequestException('Xóa đánh giá thất bại');
+    }
+
+  
+    await this.updateProductRating(productId);
+  
+  }
+
+
+  private async updateProductRating(productId: string): Promise<void> {
+    const result = await this.reviewRepo
+      .createQueryBuilder('review')
+      .select('COUNT(review.id)', 'count')
+      .addSelect('COALESCE(AVG(review.rating), 0)', 'avgRating')
+      .where('review.productId = :productId', { productId })
+      .getRawOne();
+
+    const reviewCount = Number(result.count);
+    const rating = reviewCount === 0 ? 0 : parseFloat(result.avgRating).toFixed(1);
 
     await this.productRepo.update(productId, {
-      rating: avgRating,
-      reviewCount: totalReviews,
+      reviewCount,
+      rating: Number(rating),
     });
   }
-  async deleteReview(reviewId: string):Promise<void> {
-    const result = await this.reviewRepo.delete(reviewId)
-  if (result.affected === 0) {
-    throw new NotFoundException(`Không tìm thấy review với id ${reviewId}`);
-  }
-}
-  async getReviews(productId: string) {
-  return await this.reviewRepo.find({
-    where: { product: { id: productId } },
-    relations: ['user'],
-    order: { createdAt: 'DESC' },
-  });
-}
 }

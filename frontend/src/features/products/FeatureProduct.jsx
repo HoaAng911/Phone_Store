@@ -1,35 +1,34 @@
-// src/components/ForYouSection.jsx
+// src/components/ForYouSection.jsx  (đổi tên file luôn cho đúng nghĩa)
 import { useEffect } from "react";
 import { useProductStore } from '@/store';
-import FeatureCard from "./FeatureCard"; // ĐÃ ĐỔI TÊN
-import { Skeleton } from "@/component/ui";
+import FeatureCard from "./FeatureCard";
+import { Skeleton } from "@/component/ui/skeleton"; 
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay } from "swiper/modules";
-
 import "swiper/css";
 import "swiper/css/navigation";
 
-const FeatureProduct = () => {
+const ForYouSection = () => {
   const { featuresProduct, loading, fetchFeaturesProduct } = useProductStore();
 
   useEffect(() => {
     fetchFeaturesProduct();
   }, [fetchFeaturesProduct]);
 
-  // === LOADING: 8 SKELETON ===
+  // ==================== LOADING ====================
   if (loading) {
     return (
-      <section className="py-10 px-4 bg-gray-50">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-6">
-            Dành cho bạn
+      <section className="py-12 bg-gradient-to-b from-white to-gray-50">
+        <div className="max-w-7xl mx-auto px-4">
+          <h2 className="text-3xl font-bold text-gray-800 mb-8">
+            Dành riêng cho bạn
           </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
-            {[...Array(8)].map((_, i) => (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+            {[...Array(10)].map((_, i) => (
               <div key={i} className="space-y-3">
-                <Skeleton className="aspect-square rounded-xl bg-gray-200" />
-                <Skeleton className="h-4 w-4/5 rounded-lg bg-gray-200" />
-                <Skeleton className="h-4 w-3/5 rounded-lg bg-gray-200" />
+                <Skeleton className="aspect-square rounded-2xl bg-gray-200/80" />
+                <Skeleton className="h-5 w-4/5 rounded-full bg-gray-200/70" />
+                <Skeleton className="h-4 w-3/5 rounded-full bg-gray-200/60" />
               </div>
             ))}
           </div>
@@ -38,55 +37,68 @@ const FeatureProduct = () => {
     );
   }
 
-  // === KHÔNG CÓ DỮ LIỆU ===
+  // ==================== KHÔNG CÓ DATA ====================
   if (!featuresProduct || featuresProduct.length === 0) return null;
 
-  // === HIỂN THỊ SWIPER ===
+  // ==================== CÓ DATA → SWIPER CAROUSEL ====================
   return (
-    <section className="py-10 px-4 bg-gray-50">
-      <div className="max-w-7xl mx-auto">
-        {/* Tiêu đề */}
-        <h2 className="text-2xl font-semibold text-gray-800 mb-6 flex items-center gap-2">
-          Sản phẩm nổi bật
-        </h2>
+    <section className="py-12 bg-gradient-to-b from-white to-gray-50 overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4">
+        {/* Tiêu đề + icon lửa */}
+        <div className="flex items-center gap-3 mb-8">
+          <div className="relative">
+            <h2 className="text-3xl font-bold text-gray-800">
+              Dành riêng cho bạn
+            </h2>
+            <div className="absolute -top-1 -right-6 text-red-500">
+              <svg className="w-8 h-8 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10.394 2.08a1 1 0 00-1.788 0c-.449.9-.986 2.164-1.05 3.727-.13 3.028 1.106 5.81 3.444 7.073 2.338 1.264 5.28.24 6.608-2.347.66-1.287.862-2.66.862-3.82 0-2.708-1.94-4.847-4.076-6.633z" />
+              </svg>
+            </div>
+          </div>
+        </div>
 
         {/* Swiper Carousel */}
         <Swiper
           modules={[Navigation, Autoplay]}
-          spaceBetween={20}
+          spaceBetween={16}
           slidesPerView={2}
-          navigation={{
-            nextEl: ".for-you-swiper-next",
-            prevEl: ".for-you-swiper-prev",
-          }}
-          autoplay={{ delay: 4000, disableOnInteraction: false }}
           loop={true}
+          autoplay={{
+            delay: 3500,
+            disableOnInteraction: false,
+            pauseOnMouseEnter: true,
+          }}
+          navigation={{
+            nextEl: ".for-you-next",
+            prevEl: ".for-you-prev",
+          }}
           breakpoints={{
-            640: { slidesPerView: 2 },
-            768: { slidesPerView: 3 },
+            640:  { slidesPerView: 2, spaceBetween: 20 },
+            768:  { slidesPerView: 3 },
             1024: { slidesPerView: 4 },
             1280: { slidesPerView: 5 },
+            1536: { slidesPerView: 6 },
           }}
-          className="for-you-swiper"
+          className="for-you-swiper pb-10"
         >
           {featuresProduct.map((product) => (
             <SwiperSlide key={product.id}>
-              {/* DỰA VÀO CARD MỚI – KHÔNG CẦN WRAPPER THÊM */}
               <FeatureCard product={product} />
             </SwiperSlide>
           ))}
         </Swiper>
 
-        {/* Nút điều hướng */}
-        <div className="flex justify-center gap-3 mt-6">
-          <button className="for-you-swiper-prev w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-all duration-200">
-            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        {/* Nút điều hướng đẹp hơn */}
+        <div className="flex justify-center gap-4 mt-4">
+          <button className="for-you-prev group w-12 h-12 rounded-full bg-white shadow-lg border border-gray-200 flex items-center justify-center hover:bg-red-50 hover:border-red-300 transition-all duration-300">
+            <svg className="w-6 h-6 text-gray-600 group-hover:text-red-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
-          <button className="for-you-swiper-next w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-all duration-200">
-            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          <button className="for-you-next group w-12 h-12 rounded-full bg-white shadow-lg border border-gray-200 flex items-center justify-center hover:bg-red-50 hover:border-red-300 transition-all duration-300">
+            <svg className="w-6 h-6 text-gray-600 group-hover:text-red-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </button>
         </div>
@@ -95,4 +107,4 @@ const FeatureProduct = () => {
   );
 };
 
-export default FeatureProduct;
+export default ForYouSection;

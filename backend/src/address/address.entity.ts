@@ -10,7 +10,7 @@ import {
   IsBoolean,
   IsOptional,
 } from 'class-validator';
-import { UserEntity } from './user.entity';
+import { UserEntity } from 'src/user/entity/user.entity';
 
 @Entity('addresses')
 export class AddressEntity {

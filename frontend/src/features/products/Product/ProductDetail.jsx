@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
   Clock, ChevronRight, Truck, Shield, Check, Star,
   Plus, Minus, Gift, CreditCard, Tag, Heart
@@ -8,7 +8,7 @@ import { useProductStore } from '@/store';
 import useCartStore from '@/features/cart/useCart';
 import useAuthStore from '../../auth/store/useAuthStore';
 import ProductReview from '@/features/products/ProductReview';
-
+import { toast } from 'sonner'
 const formatPrice = (price) =>
   new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 
@@ -69,7 +69,8 @@ export default function ProductDetail() {
   const [selectedImage, setSelectedImage] = useState(0);
   const { user } = useAuthStore();
   const userId = user?.id;
-
+  const navigate = useNavigate();
+  const location = useLocation();
   // Fetch product khi component mount
   useEffect(() => {
     if (id) fetchProductById(id);
@@ -83,8 +84,18 @@ export default function ProductDetail() {
   }, [product]);
   const handleAddToCart = async () => {
     if (!product) return;
+    if (!userId) {
+      toast.error("Vui lòng đăng nhập để thêm vào giỏ hàng!", {
+        description: "Bạn sẽ được chuyển đến trang đăng nhập",
+      });
+      setTimeout(() => {
+        navigate('/login', { state: { redirectTo: location.pathname } });
+      }, 400);
+      return;
+    }
+
     if (!selectedColor) {
-      alert("Vui lòng chọn màu sắc!");
+      toast.error("Vui lòng chọn màu sắc sản phẩm!");
       return;
     }
     try {
@@ -95,9 +106,14 @@ export default function ProductDetail() {
         selectedColor: selectedColor,
       });
 
-      alert("Đã thêm vào giỏ hàng!");
+      toast.success("Đã thêm vào giỏ hàng thành công!", {
+        description: `${product.name} × ${quantity}`,
+      })
     } catch (err) {
-      alert("Lỗi khi thêm vào giỏ!");
+      console.error("Lỗi thêm giỏ hàng:", err);
+      toast.error("Không thể thêm vào giỏ hàng", {
+        description: "Vui lòng thử lại sau vài giây",
+      });
     }
   };
 

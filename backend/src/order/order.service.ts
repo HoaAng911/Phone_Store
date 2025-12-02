@@ -9,7 +9,7 @@ import { ProductEntity } from 'src/product/entity/product.entity';
 import { UserEntity } from 'src/user/entity/user.entity';
 import { Repository } from 'typeorm';
 import { OrderItemEntity } from './entity/order-item.entity';
-import { AddressEntity } from 'src/user/entity/address.entity';
+import { AddressEntity } from 'src/address/address.entity';
 import { CreateCartDto } from 'src/cart/dto/cart.dto';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { NotFoundError } from 'rxjs';
@@ -110,19 +110,19 @@ export class OrderService {
     return savedOrder;
   }
 
-async getOrderByID(userId:string):Promise<OrderEntity[]>{
-  return this.orderRepo.find({
-    where:{user:{id:userId}},
-    relations:['items','item.product','address'],
-    order:{createdAt:'DESC'}
-  })
-}
-async getAllOrder():Promise<OrderEntity[]>{
-  const orders = await this.orderRepo.find({
-    relations: ['items', 'items.product', 'address', 'user'],
-    order: { createdAt: 'DESC' },
+  async getOrderByID(userId: string): Promise<OrderEntity[]> {
+    return this.orderRepo.find({
+      where: { user: { id: userId } },
+      relations: ['items', 'item.product', 'address'],
+      order: { createdAt: 'DESC' }
+    })
   }
-  )
-  return orders
-}
+  async getAllOrder(): Promise<OrderEntity[]> {
+    const orders = await this.orderRepo.find({
+      relations: ['items', 'items.product', 'address', 'user'],
+      order: { createdAt: 'DESC' },
+    }
+    )
+    return orders
+  }
 }

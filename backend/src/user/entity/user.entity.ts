@@ -17,7 +17,7 @@ import {
   IsPhoneNumber,
   IsString,
 } from 'class-validator';
-import { AddressEntity } from './address.entity';
+import { AddressEntity } from '../../address/address.entity';
 import { CartEntity } from 'src/cart/entity/cart.entity';
 import { OrderEntity } from 'src/order/entity/order.entity';
 import { Product_Review } from 'src/product/review/product-review.entity';

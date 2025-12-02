@@ -233,6 +233,13 @@ export class ProductService {
       take: limit
     })
   }
+  async getNewProduct():Promise<ProductEntity[]>{
+    return await this.productRepo.find({
+      order:{createdAt:'desc'},
+      relations:['images'],
+      take:10
+    })
+  }
   async getFlashSale(limit = 6): Promise<ProductEntity[]> {
     const now = new Date();
 

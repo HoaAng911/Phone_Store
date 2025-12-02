@@ -48,7 +48,10 @@ export class ProductController {
   getFeatured(@Query('limit') limit = 8) {
     return this.productService.getFeaturedProducts(limit);
   }
-
+  @Get('new')
+  getNewProduct(){
+    return this.productService.getNewProduct()
+  }
   // === [GET] ƯU ĐÃI SỐC ===
   @Get('flash-sale')
   getFlashSale(@Query('limit', new ParseIntPipe({ optional: true })) limit = 6) {

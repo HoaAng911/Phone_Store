@@ -7,17 +7,27 @@ const useCartStore = create((set, get) => ({
   total: 0,
   loading: false,
 
+  // Tính total LOCAL - không gọi API
+  calculateTotalLocal: () => {
+    const items = get().cartItems;
+    const total = items.reduce((sum, item) => {
+      const price = item.product?.price || 0;
+      return sum + price * item.quantity;
+    }, 0);
+    set({ total });
+  },
 
   fetchCart: async () => {
     try {
       const userId = useAuthStore.getState().user?.id;
       if (!userId) {
         console.warn('fetchCart: userId chưa có');
+        return;
       }
       set({ loading: true });
       const res = await axiosClient.get(`/cart/${userId}`);
       set({ cartItems: res.data, loading: false });
-      get().calculateTotal(userId);
+      get().calculateTotalLocal();
     } catch (error) {
       console.error("Lỗi khi tải giỏ hàng:", error.response?.data || error.message);
       set({ loading: false, cartItems: [] });
@@ -26,124 +36,114 @@ const useCartStore = create((set, get) => ({
 
   addToCart: async ({ userId, productId, quantity = 1, selectedColor }) => {
     try {
-      set({ loading: true });
-
-      const res = await axiosClient.post(
-        `/cart/${userId}`, {
-        productId, quantity, selectedColor
-      }
-      );
+      const res = await axiosClient.post(`/cart/${userId}`, {
+        productId,
+        quantity,
+        selectedColor,
+      });
       const newItem = res.data;
 
       set((state) => ({
         cartItems: [
-
           ...state.cartItems.filter(
             (item) => !(item.userId === userId && item.productId === productId)
           ),
           newItem,
         ],
-        loading: false,
       }));
 
-      get().calculateTotal(userId);
+      get().calculateTotalLocal();
       return newItem;
     } catch (error) {
       console.error("Lỗi khi thêm vào giỏ hàng:", error.response?.data || error.message);
-      set({ loading: false });
       throw error;
     }
   },
 
+  updateCartItem: async ({ userId, productId, quantity, selectedColor }) => {
+    // Lưu cart cũ để rollback
+    const previousCart = get().cartItems;
+    const previousTotal = get().total;
 
- updateCartItem: async ({ userId, productId, quantity, selectedColor }) => {
-  // Lưu cart cũ để rollback nếu lỗi
-  const previousCart = get().cartItems;
-
-  // optimistic: cập nhật local ngay
-  set((state) => ({
-    cartItems: state.cartItems.map((item) =>
-      item.userId === userId && item.productId === productId
-        ? { ...item, quantity }
-        : item
-    ),
-  }));
-
-  try {
-    set({ loading: true });
-
-    const res = await axiosClient.patch(`/cart/${userId}`, {
-      productId,
-      quantity,
-      selectedColor,
-    });
-
-    const updatedItem = res.data;
-
-    // đồng bộ lại store với backend trả về
+    // Optimistic update - Cập nhật local NGAY
     set((state) => ({
       cartItems: state.cartItems.map((item) =>
         item.userId === userId && item.productId === productId
-          ? { ...item, ...updatedItem }
+          ? { ...item, quantity, selectedColor }
           : item
       ),
-      loading: false,
     }));
 
-    get().calculateTotal(userId);
-    return updatedItem;
-  } catch (error) {
-    // rollback nếu lỗi
-    set({ cartItems: previousCart, loading: false });
-    console.error("Lỗi khi cập nhật giỏ hàng:", error.response?.data || error.message);
-    throw error;
-  }
-},
+    // Tính total local ngay
+    get().calculateTotalLocal();
 
+    try {
+      // Gọi API trong background - KHÔNG đợi
+      const res = await axiosClient.patch(`/cart/${userId}`, {
+        productId,
+        quantity,
+        selectedColor,
+      });
 
+      // Sync lại data từ server (nếu cần)
+      const updatedItem = res.data;
+      set((state) => ({
+        cartItems: state.cartItems.map((item) =>
+          item.userId === userId && item.productId === productId
+            ? { ...item, ...updatedItem }
+            : item
+        ),
+      }));
+
+      // Tính lại total sau khi sync
+      get().calculateTotalLocal();
+    } catch (error) {
+      // Rollback nếu lỗi
+      set({ cartItems: previousCart, total: previousTotal });
+      console.error("Lỗi khi cập nhật giỏ hàng:", error.response?.data || error.message);
+      throw error;
+    }
+  },
 
   removeFromCart: async (userId, productId) => {
+    // Optimistic update
+    const previousCart = get().cartItems;
+    const previousTotal = get().total;
+
+    set((state) => ({
+      cartItems: state.cartItems.filter(
+        (item) => !(item.userId === userId && item.productId === productId)
+      ),
+    }));
+
+    get().calculateTotalLocal();
+
     try {
-      set({ loading: true });
       await axiosClient.delete(`/cart/${userId}/${productId}`);
-      set((state) => ({
-        cartItems: state.cartItems.filter(
-          (item) => !(item.userId === userId && item.productId === productId)
-        ),
-        loading: false,
-      }));
-      get().calculateTotal(userId);
     } catch (error) {
+      // Rollback
+      set({ cartItems: previousCart, total: previousTotal });
       console.error("Lỗi khi xóa sản phẩm khỏi giỏ:", error.response?.data || error.message);
-      set({ loading: false });
       throw error;
     }
   },
-
-
-  calculateTotal: async (userId) => {
-    try {
-      const res = await axiosClient.get(`/cart/${userId}/total`);
-      set({ total: res.data.total });
-    } catch (error) {
-      console.error("Lỗi khi tính tổng giỏ hàng:", error.response?.data || error.message);
-      set({ total: 0 });
-    }
-  },
-
 
   clearCart: async (userId) => {
+    // Optimistic update
+    const previousCart = get().cartItems;
+    const previousTotal = get().total;
+
+    set({ cartItems: [], total: 0 });
+
     try {
-      set({ loading: true });
       await axiosClient.delete(`/cart/${userId}`);
-      set({ cartItems: [], total: 0, loading: false });
     } catch (error) {
+      // Rollback
+      set({ cartItems: previousCart, total: previousTotal });
       console.error("Lỗi khi xóa giỏ hàng:", error.response?.data || error.message);
-      set({ loading: false });
       throw error;
     }
   },
-
 
   reset: () => set({ cartItems: [], total: 0, loading: false }),
 }));

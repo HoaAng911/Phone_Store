@@ -1,3 +1,6 @@
+import { AddressModule } from './address/address.module';
+import { AddressController } from './address/address.controller';
+import { AddressService } from './address/address.service';
 import { ArticleModule } from './article/article.module';
 import { ProductReviewService } from './product/review/product-review.service';
 import { ProductReviewController } from './product/review/product-review.controller';
@@ -22,7 +25,7 @@ import { ProductImage } from './product/entity/product-image.entity';
 import { PhoneSpecification } from './product/entity/phone-specification.entity';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
-import { AddressEntity } from './user/entity/address.entity';
+import { AddressEntity } from './address/address.entity';
 import { CartEntity } from './cart/entity/cart.entity';
 import { OrderEntity } from './order/entity/order.entity';
 import { OrderItemEntity } from './order/entity/order-item.entity';
@@ -31,7 +34,7 @@ import { Article } from './article/article.entity';
 import { ArticlesService } from './article/article.service';
 @Module({
   imports: [
-        
+    AddressModule,
 
     CartModule,
 
@@ -52,9 +55,9 @@ import { ArticlesService } from './article/article.service';
         username: config.get('DB_USER'),
         password: config.get('DB_PASS'),
         database: config.get('DB_NAME'),
-        entities: [UserEntity,Product_Review, ProductEntity, 
+        entities: [UserEntity, Product_Review, ProductEntity,
           ProductImage, PhoneSpecification, AddressEntity,
-           CartEntity, OrderEntity, OrderItemEntity,Article],
+          CartEntity, OrderEntity, OrderItemEntity, Article],
         synchronize: true,
       }),
     }),
@@ -63,11 +66,12 @@ import { ArticlesService } from './article/article.service';
     AuthModule,
     OrderModule,
     ArticleModule
+
   ],
   controllers: [
-    
     ProductController, AppController],
   providers: [
+    
     AppService],
 })
 export class AppModule { }

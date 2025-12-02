@@ -28,7 +28,7 @@ const FeatureCard = ({ product }) => {
 
   return (
     <Link to={`/product/${product.id}`} className="block h-full group">
-      <Card className="h-[450px] overflow-hidden rounded-none border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+      <Card className="h-[450px] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
 
         {/* Ảnh + Badge */}
         <div className="relative bg-gray-50 p-4 aspect-square">
@@ -40,13 +40,7 @@ const FeatureCard = ({ product }) => {
             className="mx-auto h-full w-full object-contain transition-transform duration-300 group-hover:scale-105"
           />
 
-          {/* Badge Nổi bật (vàng) - nếu isFeatured */}
-          {product.isFeatured && (
-            <Badge className="absolute top-2 left-2 bg-yellow-500 text-white text-xs font-bold px-2 py-0.5 rounded-md flex items-center gap-1">
-              Nổi bật
-            </Badge>
-          )}
-
+        
           {/* Badge Giảm giá (đỏ) - nếu có */}
           {discount > 0 && (
             <Badge className="absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-md">

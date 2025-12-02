@@ -4,12 +4,13 @@ import { Routes, Route } from 'react-router-dom';
 import Home from '@/pages/Home';
 import AboutUs from '@/pages/AboutUs';
 import Contact from '@/pages/Contact';
-import Profile from '@/pages/Profile';
+import Profile from '../../features/profile/Profile';
 import CartPage from '../../pages/Cart';
 import ProductDetail from '@/features/products/Product/ProductDetail';
 import ProductCategoryPage from '@/features/products/Product/ProductCategoryPage';
 
 import { ArticleListPage, ArticleDetail } from '@/features/articles';
+import CheckoutPage from '@/pages/Checkout';
 
 export const UserRoutes = () => {
   return (
@@ -23,7 +24,7 @@ export const UserRoutes = () => {
 
       {/* Giỏ hàng */}
       <Route path="/cart" element={<CartPage />} />
-
+       <Route path="/checkout" element={<CheckoutPage />} />
       {/* Sản phẩm */}
       <Route path="/product/:id" element={<ProductDetail />} />
       <Route path="/products" element={<ProductCategoryPage />} />

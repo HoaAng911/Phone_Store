@@ -1,6 +1,5 @@
 // src/components/user/CartItem.jsx
-import React, { useState, useEffect } from 'react';
-import { format } from 'date-fns';
+import React, { useState, useEffect, useRef, memo } from 'react';
 import { Trash2, Plus, Minus } from 'lucide-react';
 import useCartStore from './useCart';
 import useAuthStore from '@/features/auth/store/useAuthStore';
@@ -8,41 +7,44 @@ import useAuthStore from '@/features/auth/store/useAuthStore';
 const formatPrice = (price) =>
   new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 
-const CartItem = ({ item }) => {
-  const { updateCartItem, removeFromCart, loading } = useCartStore();
+const CartItem = memo(({ item, readonly = false }) => {
   const { user } = useAuthStore();
   const userId = user?.id;
 
-  const [quantity, setQuantity] = useState(item.quantity || 1);
+  const updateCartItem = useCartStore((state) => state.updateCartItem);
+  const removeFromCart = useCartStore((state) => state.removeFromCart);
 
-  
+  const [quantity, setQuantity] = useState(item.quantity || 1);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const debounceTimerRef = useRef(null);
+
   useEffect(() => {
     setQuantity(item.quantity || 1);
   }, [item.quantity]);
 
   const product = item.product;
-  if (!product) return null;
 
-  // Flash sale đang diễn ra?
-  const isFlashSaleActive = product.flashSaleUntil
-    ? new Date(product.flashSaleUntil) > new Date()
-    : false;
-
+  // KHÔNG early return nữa → an toàn 100%
+  if (!product) {
+    return (
+      <div className="flex gap-4 p-4 border rounded-lg bg-gray-50 animate-pulse">
+        <div className="w-24 h-24 bg-gray-200 rounded-md" />
+        <div className="flex-1 space-y-3">
+          <div className="h-5 bg-gray-200 rounded w-3/4" />
+          <div className="h-4 bg-gray-200 rounded w-1/2" />
+        </div>
+      </div>
+    );
+  }
 
   const currentPrice = product.price;
   const totalPrice = currentPrice * quantity;
-
-  
   const selectedColor = item.selectedColor || '';
 
- 
-  const isItemLoading = loading;
+  const performUpdate = async (newQty) => {
+    if (!userId || newQty < 1 || newQty > product.stock || readonly) return;
 
-  const handleUpdate = async (newQty) => {
-    if (!userId || loading) return;
-    if (newQty < 1 || newQty > product.stock) return;
-
-    setQuantity(newQty); 
+    setIsUpdating(true);
     try {
       await updateCartItem({
         userId,
@@ -51,105 +53,104 @@ const CartItem = ({ item }) => {
         selectedColor: item.selectedColor,
       });
     } catch (err) {
-      setQuantity(item.quantity); // rollback nếu lỗi
-      alert('Cập nhật thất bại, vui lòng thử lại!');
+      setQuantity(item.quantity);
+      alert('Cập nhật thất bại!');
+    } finally {
+      setIsUpdating(false);
     }
   };
 
+  const handleButtonClick = (newQty) => {
+    if (newQty < 1 || newQty > product.stock || readonly) return;
+    setQuantity(newQty);
+    performUpdate(newQty);
+  };
+
+  const handleInputChange = (newQty) => {
+    if (newQty < 1 || newQty > product.stock || readonly) return;
+    setQuantity(newQty);
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    debounceTimerRef.current = setTimeout(() => performUpdate(newQty), 800);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    };
+  }, []);
 
   const handleRemove = async () => {
-    if (!userId || isItemLoading) return;
-
-    try {
+    if (!userId || isUpdating || readonly) return;
+    if (window.confirm('Xóa sản phẩm khỏi giỏ hàng?')) {
       await removeFromCart(userId, product.id);
-    } catch (err) {
-      alert('Xóa thất bại!');
     }
   };
 
   return (
-    <div className="flex gap-4 p-4 border rounded-lg bg-white shadow-sm hover:shadow transition">
+    <div className="flex gap-4 p-4 border border-gray-200 rounded-lg bg-white shadow-sm hover:border-blue-300 transition-all">
       <img
         src={product.images?.[0]?.url || '/placeholder.png'}
         alt={product.name}
-        className="w-24 h-24 object-cover rounded-md flex-shrink-0"
+        className="w-24 h-24 object-cover rounded-md border"
       />
 
-      <div className="flex-1 space-y-2">
-        <h3 className="font-semibold text-lg line-clamp-2">{product.name}</h3>
+      <div className="flex-1">
+        <h3 className="font-semibold text-base line-clamp-2">{product.name}</h3>
         <p className="text-sm text-gray-500">{product.brand}</p>
+        {selectedColor && <p className="text-xs text-gray-600 mt-1">Màu: {selectedColor}</p>}
 
-        <div className="text-xs text-gray-600 space-y-1">
-          <p>Màu: {selectedColor || 'Không có'}</p>
-          <p>
-            {product.specification?.screenSize || ''} • {product.specification?.storage || ''}
-          </p>
-        </div>
+        <div className="mt-3">
+          {!readonly ? (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handleButtonClick(quantity - 1)}
+                disabled={quantity <= 1 || isUpdating}
+                className="w-8 h-8 rounded border flex items-center justify-center hover:bg-gray-50 disabled:opacity-50"
+              >
+                <Minus className="w-4 h-4" />
+              </button>
 
-        {isFlashSaleActive && (
-          <div className="inline-flex items-center gap-1 bg-red-100 text-red-600 text-xs px-2 py-1 rounded-full">
-            <span>Flash Sale -{product.discountPercent}%</span>
-            <span>đến {format(new Date(product.flashSaleUntil), 'HH:mm dd/MM')}</span>
-          </div>
-        )}
-      </div>
+              <input
+                type="number"
+                value={quantity}
+                onChange={(e) => handleInputChange(parseInt(e.target.value) || 1)}
+                className="w-16 h-8 text-center border rounded font-medium"
+                min="1"
+                max={product.stock}
+              />
 
-      <div className="flex flex-col items-end gap-3">
-        {/* Giá */}
-        <div className="text-right">
-          {isFlashSaleActive ? (
-            <>
-              <p className="text-lg font-bold text-red-600">{formatPrice(currentPrice)}</p>
-              <p className="text-sm text-gray-500 line-through">
-                {formatPrice(product.originalPrice)}
-              </p>
-            </>
+              <button
+                onClick={() => handleButtonClick(quantity + 1)}
+                disabled={quantity >= product.stock || isUpdating}
+                className="w-8 h-8 rounded border flex items-center justify-center hover:bg-gray-50 disabled:opacity-50"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+            </div>
           ) : (
-            <p className="text-lg font-bold">{formatPrice(currentPrice)}</p>
+            <p className="text-sm font-medium">Số lượng: <span className="text-red-600">{quantity}</span></p>
           )}
         </div>
 
-        {/* Số lượng */}
-        <div className="flex items-center gap-2">
+        {isUpdating && <p className="text-xs text-blue-600 mt-1">Đang lưu...</p>}
+      </div>
+
+      <div className="text-right">
+        <p className="text-lg font-bold text-red-600">{formatPrice(totalPrice)}</p>
+        {!readonly && (
           <button
-            onClick={() => handleUpdate(quantity - 1)}
-            disabled={quantity <= 1 || isItemLoading}
-            className="p-1 rounded-full hover:bg-gray-100 disabled:opacity-50"
+            onClick={handleRemove}
+            className="text-sm text-gray-500 hover:text-red-600 mt-3 flex items-center gap-1"
           >
-            <Minus className="w-4 h-4" />
+            <Trash2 className="w-4 h-4" />
+            Xóa
           </button>
-
-          <input
-            type="text"
-            value={quantity}
-            onChange={(e) => {
-              const val = parseInt(e.target.value) || 1;
-              if (val >= 1 && val <= product.stock) handleUpdate(val);
-            }}
-            className="w-16 text-center border rounded-md font-medium focus:border-red-500 outline-none"
-          />
-
-          <button
-            onClick={() => handleUpdate(quantity + 1)}
-            disabled={quantity >= product.stock || isItemLoading}
-            className="p-1 rounded-full hover:bg-gray-100 disabled:opacity-50"
-          >
-            <Plus className="w-4 h-4" />
-          </button>
-        </div>
-
-        <p className="text-sm font-semibold">Tổng: {formatPrice(totalPrice)}</p>
-
-        <button
-          onClick={handleRemove}
-          disabled={isItemLoading}
-          className="text-red-500 hover:text-red-700 disabled:opacity-50"
-        >
-          <Trash2 className="w-5 h-5" />
-        </button>
+        )}
       </div>
     </div>
   );
-};
+});
+
+CartItem.displayName = 'CartItem';
 
 export default CartItem;

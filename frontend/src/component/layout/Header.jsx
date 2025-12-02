@@ -2,86 +2,19 @@
 import { ShoppingCart, User } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useState, useRef, useEffect } from 'react';
-
 import Logo from '../../assets/Logo.webp';
 import useCartStore from '@/features/cart/useCart';
 import useAuthStore from '../../features/auth/store/useAuthStore';
-
-// Dropdown khi đã đăng nhập
-const UserDropdown = ({ user, onClose, onLogout }) => {
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    onLogout();
-    onClose();
-    navigate('/login');
-  };
-
-  return (
-    <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden z-50">
-      <div className="px-4 py-3 border-b border-gray-100">
-        <p className="text-sm font-semibold text-gray-900 truncate">
-          {user.username || user.email}
-        </p>
-        <p className="text-xs text-gray-500 truncate">{user.email}</p>
-      </div>
-
-      <Link
-        to="/profile"
-        onClick={onClose}
-        className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-      >
-        My Profile
-      </Link>
-      <Link
-        to="/orders"
-        onClick={onClose}
-        className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-      >
-        My Orders
-      </Link>
-
-      <div className="border-t border-gray-100">
-        <button
-          onClick={handleLogout}
-          className="w-full text-left px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
-        >
-          Sign Out
-        </button>
-      </div>
-    </div>
-  );
-};
-
-// Navigation links (desktop)
-const NavLinks = () => (
-  <nav className="hidden md:flex items-center gap-8 flex-1 justify-center">
-    {[
-      { to: '/', label: 'Home' },
-      { to: '/products', label: 'Products' },
-      { to: '/about', label: 'About' },
-      { to: '/contact', label: 'Contact' },
-    ].map(({ to, label }) => (
-      <Link
-        key={to}
-        to={to}
-        className="relative text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors py-1 group"
-      >
-        {label}
-        <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-900 group-hover:w-full transition-all duration-300" />
-      </Link>
-    ))}
-  </nav>
-);
+import { toast } from 'sonner';
 
 export default function Header() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false); // ← chỉ hiện 250ms
   const dropdownRef = useRef(null);
-
-  const { user, logout } = useAuthStore();
   const navigate = useNavigate();
 
-  const totalQuantity = useCartStore((state) =>
+  const { user, logout } = useAuthStore();
+  const totalQuantity = useCartStore(state =>
     state.cartItems.reduce((sum, item) => sum + item.quantity, 0)
   );
 
@@ -96,60 +29,118 @@ export default function Header() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // CHUYỂN TRANG SIÊU MƯỢT — CHỈ 250ms
+  const smoothNavigate = (to, requireAuth = false) => {
+    if (requireAuth && !user) {
+      toast.error("Vui lòng đăng nhập!", { duration: 1500 });
+      setTimeout(() => navigate('/login'), 200);
+      return;
+    }
+
+    // Bật loading overlay
+    setIsNavigating(true);
+
+    // Tắt loading + chuyển trang sau đúng 250ms
+    const timer = setTimeout(() => {
+      navigate(to);
+      setIsNavigating(false);
+    }, 250);
+
+    // Nếu người dùng click liên tục → clear timer cũ
+    return () => clearTimeout(timer);
+  };
+
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+    <>
+      {/* Loading overlay siêu nhanh — chỉ 250ms */}
+      {isNavigating && (
+        <div className="fixed inset-0 bg-white/70 backdrop-blur-[2px] z-[9999] flex items-center justify-center pointer-events-none">
+          <div className="w-10 h-10 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      )}
 
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-            <img src={Logo} alt="ANT_STORE" className="w-9 h-9 rounded-lg object-cover" />
-            <span className="hidden sm:block font-semibold text-lg tracking-tight">
-              ANT_STORE
-            </span>
-          </Link>
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-200 shadow-sm">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between h-16">
 
-          {/* Desktop Navigation */}
-          <NavLinks />
+            {/* Logo */}
+            <button
+              onClick={() => smoothNavigate('/')}
+              className="flex items-center gap-3 hover:scale-105 transition-transform"
+            >
+              <img src={Logo} alt="ANT_STORE" className="w-10 h-10 rounded-lg shadow-md" />
+              <span className="hidden sm:block text-2xl font-bold bg-gradient-to-r from-blue-400 to-blue-300 bg-clip-text text-transparent">
+                ANT_STORE
+              </span>
+            </button>
 
-          {/* Right Actions */}
-          <div className="flex items-center gap-4">
-            {/* User */}
-            {user ? (
-              <div className="relative" ref={dropdownRef}>
+            {/* Nav Links */}
+            <nav className="hidden md:flex items-center gap-10">
+              {[
+                { to: '/', label: 'Home' },
+                { to: '/products', label: 'Sản phẩm' },
+                { to: '/about', label: 'Giới thiệu' },
+                { to: '/contact', label: 'Liên hệ' },
+              ].map(({ to, label }) => (
                 <button
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="w-10 h-10 rounded-full bg-gray-900 text-white flex items-center justify-center text-sm font-medium hover:bg-gray-800 transition-colors"
+                  key={to}
+                  onClick={() => smoothNavigate(to)}
+                  className="text-gray-700 hover:text-red-600 font-medium relative after:absolute after:-bottom-1 after:left-0 after:w-0 after:h-0.5 after:bg-red-600 after:transition-all hover:after:w-full"
                 >
-                  {(user.username || user.email)[0].toUpperCase()}
+                  {label}
                 </button>
+              ))}
+            </nav>
 
-                {isDropdownOpen && (
-                  <UserDropdown user={user} onClose={() => setIsDropdownOpen(false)} onLogout={logout} />
-                )}
-              </div>
-            ) : (
-              <Link
-                to="/login"
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
-              >
-                <User className="w-4 h-4" />
-                <span className="hidden sm:inline">Sign In</span>
-              </Link>
-            )}
+            {/* Right Actions */}
+            <div className="flex items-center gap-4">
+              {/* User */}
+              {user ? (
+                <div className="relative" ref={dropdownRef}>
+                  <button
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    className="w-11 h-11 rounded-full bg-gradient-to-br from-red-500 to-pink-600 text-white font-bold text-lg shadow-lg hover:scale-110 transition-transform"
+                  >
+                    {(user.username || user.email)[0].toUpperCase()}
+                  </button>
 
-            {/* Cart */}
-            <Link to="/cart" className="relative p-2 hover:bg-gray-50 rounded-lg transition-colors">
-              <ShoppingCart className="w-5 h-5 text-gray-700" />
-              {totalQuantity > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 flex items-center justify-center rounded-full bg-red-500 text-white text-xs font-medium">
-                  {totalQuantity > 99 ? '99+' : totalQuantity}
-                </span>
+                  {isDropdownOpen && (
+                    <div className="absolute right-0 top-full mt-3 w-60 bg-white rounded-2xl shadow-2xl border overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                      <div className="p-4 bg-gradient-to-r from-red-50 to-pink-50">
+                        <p className="font-bold text-gray-900">{user.username || user.email}</p>
+                        <p className="text-sm text-gray-600">{user.email}</p>
+                      </div>
+                      <button onClick={() => { smoothNavigate('/profile'); setIsDropdownOpen(false); }} className="w-full text-left px-5 py-3 hover:bg-gray-50">Hồ sơ</button>
+                      <button onClick={() => { smoothNavigate('/orders'); setIsDropdownOpen(false); }} className="w-full text-left px-5 py-3 hover:bg-gray-50">Đơn hàng</button>
+                      <button onClick={() => { logout(); smoothNavigate('/'); }} className="w-full text-left px-5 py-3 text-red-600 font-medium hover:bg-red-50">Đăng xuất</button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <button
+                  onClick={() => smoothNavigate('/login')}
+                  className="px-5 py-2.5 bg-red-600 text-white rounded-none font-medium hover:bg-red-700 hover:shadow-lg transition-all"
+                >
+                  Đăng nhập
+                </button>
               )}
-            </Link>
+
+              {/* Cart */}
+              <button
+                onClick={() => smoothNavigate('/cart', true)}
+                className="relative p-3 hover:bg-red-50 rounded-xl transition-all group"
+              >
+                <ShoppingCart className="w-6 h-6 text-gray-700 group-hover:text-red-600 transition-colors" />
+                {totalQuantity > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-6 h-6 bg-red-600 text-white text-xs font-bold rounded-full flex items-center justify-center animate-bounce">
+                    {totalQuantity > 99 ? '99+' : totalQuantity}
+                  </span>
+                )}
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    </header>
+      </header>
+    </>
   );
 }
