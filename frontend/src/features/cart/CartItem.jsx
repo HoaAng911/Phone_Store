@@ -24,18 +24,8 @@ const CartItem = memo(({ item, readonly = false }) => {
 
   const product = item.product;
 
-  // KHÔNG early return nữa → an toàn 100%
-  if (!product) {
-    return (
-      <div className="flex gap-4 p-4 border rounded-lg bg-gray-50 animate-pulse">
-        <div className="w-24 h-24 bg-gray-200 rounded-md" />
-        <div className="flex-1 space-y-3">
-          <div className="h-5 bg-gray-200 rounded w-3/4" />
-          <div className="h-4 bg-gray-200 rounded w-1/2" />
-        </div>
-      </div>
-    );
-  }
+ 
+ 
 
   const currentPrice = product.price;
   const totalPrice = currentPrice * quantity;
@@ -85,7 +75,17 @@ const CartItem = memo(({ item, readonly = false }) => {
       await removeFromCart(userId, product.id);
     }
   };
-
+ if (!product) {
+    return (
+      <div className="flex gap-4 p-4 border rounded-lg bg-gray-50 animate-pulse">
+        <div className="w-24 h-24 bg-gray-200 rounded-md" />
+        <div className="flex-1 space-y-3">
+          <div className="h-5 bg-gray-200 rounded w-3/4" />
+          <div className="h-4 bg-gray-200 rounded w-1/2" />
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="flex gap-4 p-4 border border-gray-200 rounded-lg bg-white shadow-sm hover:border-blue-300 transition-all">
       <img

@@ -20,7 +20,7 @@ export class UserService {
 
   //  Lấy 1 user theo id
   async getUserById(id: string): Promise<UserEntity> {
-    const user = await this.userRepo.findOne({ where:{id},relations:['reviews','reviews.product','cart'] });
+    const user = await this.userRepo.findOne({ where:{id},relations:['reviews','reviews.product','cart','orders'] });
     if (!user) {
       throw new NotFoundException(`Không tìm thấy user có id = ${id}`);
     }

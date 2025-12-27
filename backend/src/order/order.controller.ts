@@ -13,29 +13,29 @@ import { CreateOrderDto } from './dto/create-order.dto';
 
 @Controller('orders')
 export class OrderController {
-  constructor(private readonly orderService: OrderService) {}
+  constructor(private readonly orderService: OrderService) { }
 
 
   @Post()
   async createOrder(
-    @Query('userId', ParseIntPipe) userId: string,
+    @Query('userId',  ) userId: string,
     @Body() dto: CreateOrderDto,
   ) {
     return this.orderService.createOrder(userId, dto);
   }
 
-  
+
   @Get('my')
-  async getOrdersByUserId(@Query('userId', ParseIntPipe) userId: string) {
+  async getOrdersByUserId(@Query('userId') userId: string) {
     return this.orderService.getOrderByID(userId);
   }
 
-@Get()
-async getAllOrder(){
-  return this.orderService.getAllOrder()
-}
+  @Get()
+  async getAllOrder() {
+    return this.orderService.getAllOrder()
+  }
   @Get(':id')
-  async getOrderDetail(@Param('id', ParseIntPipe) orderId: string) {
-    return this.orderService.getOrderByID(orderId);
+  async getOrderDetail(@Param('id') orderId: string) { 
+    return this.orderService.getOrderDetail(orderId); 
   }
 }

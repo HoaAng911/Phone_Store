@@ -1,5 +1,14 @@
 // src/order/dto/create-order.dto.ts
-import { IsEnum, IsInt, IsNotEmpty, IsObject, IsOptional, Min } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  IsEnum,
+  IsInt,
+  IsNotEmpty,
+  IsObject,
+  IsOptional,
+  IsString,
+  Min,
+} from 'class-validator';
 
 export class AddressInputDto {
   @IsNotEmpty({ message: 'Họ tên không được để trống' })
@@ -28,7 +37,7 @@ export class CreateOrderDto {
   type: 'cart' | 'single';
 
   @IsOptional()
-  @IsInt({ message: 'addressId phải là số' })
+  @IsString()
   addressId?: string;
 
   @IsOptional()
@@ -36,12 +45,12 @@ export class CreateOrderDto {
   address?: AddressInputDto;
 
   @IsOptional()
-  @IsInt({ message: 'productId phải là số' })
-  @Min(1, { message: 'productId phải lớn hơn 0' })
+  @IsString()
   productId?: string;
 
   @IsOptional()
-  @IsInt({ message: 'quantity phải là số' })
-  @Min(1, { message: 'Số lượng phải ít nhất là 1' })
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
   quantity?: number;
 }

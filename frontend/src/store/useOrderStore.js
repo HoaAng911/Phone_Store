@@ -18,6 +18,7 @@ const useOrderStore = create((set, get) => ({
         orders: res.data,
         loading: false
       })
+      console.log(orders)
     } catch (error) {
       console.error(" Lỗi khi tải danh sách đơn hàng:", error);
       set({ loading: false })
@@ -29,6 +30,8 @@ const useOrderStore = create((set, get) => ({
     try {
       set({ loading: true })
       const res = await axiosClient.get(`/orders/my?userId=${userId}`)
+      console.log('API Response:', res); // Debug
+      console.log('Response data:', res.data); // Debug
 
       set({
         orders: res.data,
@@ -60,10 +63,11 @@ const useOrderStore = create((set, get) => ({
     try {
       set({ loading: true })
       const res = await axiosClient.post(`/orders?userId=${userId}`, data)
+
       set({ loading: false })
       return res.data
     } catch (error) {
-      console.error("❌ Lỗi tạo đơn hàng:", error);
+      console.error(" Lỗi tạo đơn hàng:", error);
       set({ loading: false })
     }
   },

@@ -2,6 +2,7 @@
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { Package, ChevronRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const getStatusColor = (status) => {
   const map = {
@@ -25,19 +26,31 @@ const getStatusText = (status) => {
   return map[status] || status;
 };
 
-export default function OrderItem({ order, onClickDetail }) {
+export default function OrderItem({ order }) {
+ 
+
+  // Hàm format tiền tệ an toàn
+  const formatCurrency = (value) => {
+    if (value === null || value === undefined || value === '') return '0₫';
+    const num = typeof value === 'string' ? parseFloat(value) : Number(value);
+    if (isNaN(num)) return '0₫';
+    return num.toLocaleString('vi-VN') + '₫';
+  };
+
   return (
     <div
-      onClick={onClickDetail}
       className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all cursor-pointer border border-gray-100"
     >
       {/* Header: Mã đơn + ngày + trạng thái */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-5">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">#{order.orderNumber}</h3>
+          {/* SỬA: order.id thay vì order.orderNumber */}
+          <h3 className="text-lg font-semibold text-gray-900">
+            #{order.id?.slice(0, 8) || order.orderNumber || 'N/A'}
+          </h3>
           <p className="text-sm text-gray-500 flex items-center gap-1.5">
             <Package className="w-4 h-4" />
-            {format(new Date(order.createdAt), 'dd/MM/yyyy HH:mm', { locale: vi })}
+            {order.createdAt ? format(new Date(order.createdAt), 'dd/MM/yyyy HH:mm', { locale: vi }) : '—'}
           </p>
         </div>
 
@@ -46,7 +59,7 @@ export default function OrderItem({ order, onClickDetail }) {
         </span>
       </div>
 
-      {/* Danh sách sản phẩm (tối đa 3 cái, còn lại hiện +n) */}
+      {/* Danh sách sản phẩm */}
       <div className="space-y-3 mb-5">
         {order.items?.slice(0, 3).map((item, idx) => (
           <div key={idx} className="flex items-center justify-between text-sm">
@@ -66,14 +79,15 @@ export default function OrderItem({ order, onClickDetail }) {
                 <p className="text-gray-500">x{item.quantity}</p>
               </div>
             </div>
+            {/* SỬA: format tiền an toàn */}
             <span className="font-medium text-gray-900">
-              {(item.price * item.quantity).toLocaleString('vi-VN')}₫
+              {formatCurrency(parseFloat(item.price || 0) * item.quantity)}
             </span>
           </div>
         ))}
 
         {order.items?.length > 3 && (
-          <p className="text-sm text-gray-500 text-center pt-2">
+          <p className="text-sm text-gray-500 text-center pt new Date(2)">
             và {order.items.length - 3} sản phẩm khác...
           </p>
         )}
@@ -83,15 +97,19 @@ export default function OrderItem({ order, onClickDetail }) {
       <div className="flex justify-between items-center pt-4 border-t border-gray-200">
         <div>
           <span className="text-sm text-gray-600">Thành tiền:</span>
+          {/* SỬA: order.totalPrice thay vì order.total */}
           <span className="text-xl font-bold text-violet-600 ml-2">
-            {order.total?.toLocaleString('vi-VN')}₫
+            {formatCurrency(order.totalPrice || order.total || 0)}
           </span>
         </div>
-
-        <button className="flex items-center gap-1.5 text-violet-600 font-medium hover:text-violet-700">
+        <Link
+          to={`/orders/${order.id}`}
+          className="flex items-center gap-1.5 text-violet-600 font-medium hover:text-violet-700"
+        >
           Xem chi tiết
           <ChevronRight className="w-5 h-5" />
-        </button>
+        </Link>
+
       </div>
     </div>
   );

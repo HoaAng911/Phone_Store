@@ -1,4 +1,4 @@
-// src/components/profile/ProfileHeader.jsx
+
 import { User, Mail, Phone, Shield, Package, Star } from 'lucide-react';
 
 export default function ProfileHeader({ user }) {

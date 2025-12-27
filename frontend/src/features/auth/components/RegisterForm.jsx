@@ -1,7 +1,6 @@
 // components/Auth/RegisterForm.jsx
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import useAuthStore from '../../auth/store/useAuthStore';
 
 export default function RegisterForm() {
   const [form, setForm] = useState({
@@ -11,7 +10,6 @@ export default function RegisterForm() {
     confirmPassword: '',
   });
 
-  const { register, loading, error } = useAuthStore();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -32,16 +30,23 @@ export default function RegisterForm() {
     }
 
     try {
-      await register({
-        username: form.username.trim(),
-        email: form.email.trim(),
-        password: form.password,
-        confirmPassword: form.confirmPassword,
+      await fetch('/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: form.username.trim(),
+          email: form.email.trim(),
+          password: form.password,
+          confirmPassword: form.confirmPassword,
+        }),
       });
+      
       alert('Đăng ký thành công! Vui lòng đăng nhập.');
       navigate('/login');
     } catch (err) {
-      // error đã được xử lý trong store
+      console.error('Registration error:', err);
     }
   };
 
@@ -53,13 +58,6 @@ export default function RegisterForm() {
           <h2 className="text-2xl font-bold text-center uppercase mb-8 text-gray-900">
             Đăng ký
           </h2>
-
-          {/* Server Error */}
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm mb-6 text-center">
-              {error}
-            </div>
-          )}
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
@@ -140,10 +138,9 @@ export default function RegisterForm() {
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={loading}
-              className="w-full bg-black text-white font-medium py-3 rounded-md hover:bg-gray-800 transition disabled:bg-gray-500 disabled:cursor-not-allowed"
+              className="w-full bg-black text-white font-medium py-3 rounded-md hover:bg-gray-800 transition"
             >
-              {loading ? 'Đang xử lý...' : 'Đăng ký'}
+              Đăng ký
             </button>
 
             {/* Footer Note */}

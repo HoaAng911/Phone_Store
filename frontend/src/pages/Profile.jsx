@@ -1,5 +1,5 @@
-// src/components/Profile.jsx
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../features/auth/store/useAuthStore';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
@@ -9,18 +9,56 @@ import {
   Clock, Shield, ChevronRight, Plus,
   Edit2, Trash2
 } from 'lucide-react';
-import { useReviewStore } from '@/store';
+import { useOrderStore, useReviewStore } from '@/store';
 
 export default function Profile() {
-  const { user, loading, init, fetchProfile } = useAuthStore();
+  const navigate = useNavigate();
+  const { user, loading, fetchProfile } = useAuthStore();
   const [activeTab, setActiveTab] = useState('overview');
   const { deleteReviews } = useReviewStore()
   const [reviews, setReviews] = useState([]);
+  const [userOrders, setUserOrders] = useState([]);
+  const {
+    orders,
+    loading: ordersLoading,
+    fetchMyOrders,
+    fetchAllOrder
+  } = useOrderStore();
+
+  // Hàm format tiền tệ
+  const formatCurrency = (value) => {
+    if (value === null || value === undefined || value === '') return '0₫';
+
+    // Convert string to number nếu cần
+    const num = typeof value === 'string' ? parseFloat(value) : Number(value);
+
+    // Kiểm tra nếu không phải số hợp lệ
+    if (isNaN(num)) return '0₫';
+
+    return num.toLocaleString('vi-VN') + '₫';
+  };
+
   useEffect(() => {
     if (!user) {
       fetchProfile();
     }
   }, [user, fetchProfile]);
+
+  useEffect(() => {
+    if (user?.id) {
+      if (user.role === 'admin') {
+        fetchAllOrder();
+      } else {
+        fetchMyOrders(user.id);
+      }
+    }
+  }, [user, fetchMyOrders, fetchAllOrder]);
+
+  useEffect(() => {
+
+    setUserOrders(orders);
+  }, [orders]);
+
   useEffect(() => {
     if (user?.reviews) {
       setReviews(user.reviews);
@@ -30,10 +68,10 @@ export default function Profile() {
   const handleDeleteReview = (reviewId) => {
     if (!window.confirm('Bạn có chắc muốn xóa đánh giá này không?')) return;
 
-
     void deleteReviews(reviewId);
     setReviews((prev) => prev.filter((r) => r.id !== reviewId));
   };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -79,6 +117,9 @@ export default function Profile() {
     { id: 'reviews', label: 'Đánh giá', icon: Star }
   ];
 
+  // Tính tổng số sản phẩm trong giỏ hàng
+  const cartItemCount = user.cart?.items?.reduce((total, item) => total + (item.quantity || 0), 0) || 0;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Header Section */}
@@ -102,7 +143,7 @@ export default function Profile() {
             {/* User Info */}
             <div className="text-center md:text-left flex-1">
               <h1 className="text-4xl font-bold mb-2">
-                {user.username || 'Người dùng'}
+                {user.username || user.email.split('@')[0]}
               </h1>
               <div className="flex flex-wrap gap-4 justify-center md:justify-start text-white/90">
                 <div className="flex items-center gap-2">
@@ -118,8 +159,8 @@ export default function Profile() {
               </div>
               <div className="flex gap-3 mt-4 justify-center md:justify-start">
                 <span className={`px-4 py-1.5 rounded-full text-sm font-semibold ${user.role === 'admin'
-                    ? 'bg-red-500 text-white'
-                    : 'bg-white/20 backdrop-blur-sm border border-white/30'
+                  ? 'bg-red-500 text-white'
+                  : 'bg-white/20 backdrop-blur-sm border border-white/30'
                   }`}>
                   {user.role === 'admin' ? 'Quản trị viên' : 'Khách hàng'}
                 </span>
@@ -152,8 +193,8 @@ export default function Profile() {
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors border-b-2 whitespace-nowrap ${activeTab === tab.id
-                      ? 'border-violet-600 text-violet-600'
-                      : 'border-transparent text-gray-600 hover:text-gray-900'
+                    ? 'border-violet-600 text-violet-600'
+                    : 'border-transparent text-gray-600 hover:text-gray-900'
                     }`}
                 >
                   <Icon className="w-5 h-5" />
@@ -214,8 +255,8 @@ export default function Profile() {
                     <ShoppingCart className="w-6 h-6 text-orange-600" />
                   </div>
                   <div>
-                    <div className="text-3xl font-bold text-gray-900">{user.cart?.items?.length || 0}</div>
-                    <div className="text-sm text-gray-600">Trong giỏ</div>
+                    <div className="text-3xl font-bold text-gray-900">{cartItemCount}</div>
+                    <div className="text-sm text-gray-600">Sản phẩm trong giỏ</div>
                   </div>
                 </div>
               </div>
@@ -256,9 +297,9 @@ export default function Profile() {
                       <div className="flex items-center gap-3">
                         <Package className="w-5 h-5 text-gray-400" />
                         <div>
-                          <p className="font-medium">{order.orderNumber}</p>
+                          <p className="font-medium">Đơn hàng #{order.id?.slice(0, 8)}</p>
                           <p className="text-sm text-gray-500">
-                            {format(new Date(order.createdAt), 'dd/MM/yyyy', { locale: vi })}
+                            {order.createdAt ? format(new Date(order.createdAt), 'dd/MM/yyyy', { locale: vi }) : '—'}
                           </p>
                         </div>
                       </div>
@@ -303,7 +344,7 @@ export default function Profile() {
                         <div className="space-y-2 text-gray-600">
                           <p className="flex items-center gap-2">
                             <Phone className="w-4 h-4" />
-                            {address.phoneNumber}
+                            {address.phone}
                           </p>
                           <p className="flex items-start gap-2">
                             <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
@@ -343,15 +384,22 @@ export default function Profile() {
           <div className="space-y-4">
             <h2 className="text-2xl font-bold mb-6">Đơn hàng của tôi</h2>
 
-            {user.orders && user.orders.length > 0 ? (
+            {ordersLoading ? (
+              <div className="text-center py-12">
+                <div className="w-8 h-8 border-2 border-violet-600 rounded-full animate-spin border-t-transparent mx-auto"></div>
+                <p className="text-gray-500 mt-4">Đang tải đơn hàng...</p>
+              </div>
+            ) : userOrders.length > 0 ? (
               <div className="space-y-4">
-                {user.orders.map(order => (
+                {userOrders.map(order => (
                   <div key={order.id} className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                       <div>
-                        <h3 className="font-semibold text-lg mb-1">{order.orderNumber}</h3>
+                        <h3 className="text-lg font-semibold text-gray-900">
+                          #{order.id?.slice(0, 8) || 'N/A'}
+                        </h3>
                         <p className="text-sm text-gray-500">
-                          {format(new Date(order.createdAt), 'dd/MM/yyyy HH:mm', { locale: vi })}
+                          {order.createdAt ? format(new Date(order.createdAt), 'dd/MM/yyyy HH:mm', { locale: vi }) : '—'}
                         </p>
                       </div>
                       <span className={`px-4 py-2 rounded-full text-sm font-medium self-start ${getStatusColor(order.status)}`}>
@@ -365,7 +413,7 @@ export default function Profile() {
                         {order.items.slice(0, 2).map((item, idx) => (
                           <div key={idx} className="flex justify-between text-sm text-gray-600">
                             <span>{item.product?.name || 'Sản phẩm'} x{item.quantity}</span>
-                            <span>{(item.price * item.quantity).toLocaleString('vi-VN')}₫</span>
+                            <span>{formatCurrency(parseFloat(item.price) * item.quantity)}</span>
                           </div>
                         ))}
                         {order.items.length > 2 && (
@@ -378,9 +426,12 @@ export default function Profile() {
 
                     <div className="flex justify-between items-center pt-4 border-t">
                       <div className="text-lg font-semibold text-violet-600">
-                        Tổng: {order.total?.toLocaleString('vi-VN')}₫
+                        Tổng:   {parseFloat(order.totalPrice || 0).toLocaleString('vi-VN')}
                       </div>
-                      <button className="flex items-center gap-1 text-violet-600 hover:text-violet-700 font-medium">
+                      <button
+                        className="flex items-center gap-1 text-violet-600 hover:text-violet-700 font-medium"
+                        onClick={() => navigate(`/orders/${order.id}`)}
+                      >
                         Chi tiết
                         <ChevronRight className="w-5 h-5" />
                       </button>
@@ -402,7 +453,7 @@ export default function Profile() {
           <div className="space-y-4">
             <h2 className="text-2xl font-bold mb-6">Đánh giá của tôi</h2>
 
-            {user.reviews && user.reviews.length > 0 ? (
+            {reviews.length > 0 ? (
               <div className="space-y-4">
                 {reviews.map(review => (
                   <div key={review.id} className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition">
@@ -410,7 +461,7 @@ export default function Profile() {
                       <div>
                         <h3 className="font-semibold text-lg">{review.product?.name || 'Sản phẩm'}</h3>
                         <p className="text-sm text-gray-500">
-                          {format(new Date(review.createdAt), 'dd/MM/yyyy HH:mm', { locale: vi })}
+                          {review.createdAt ? format(new Date(review.createdAt), 'dd/MM/yyyy HH:mm', { locale: vi }) : '—'}
                         </p>
                       </div>
                       <div className="flex items-center gap-1">
@@ -418,8 +469,8 @@ export default function Profile() {
                           <Star
                             key={i}
                             className={`w-5 h-5 ${i < review.rating
-                                ? 'fill-yellow-400 text-yellow-400'
-                                : 'text-gray-300'
+                              ? 'fill-yellow-400 text-yellow-400'
+                              : 'text-gray-300'
                               }`}
                           />
                         ))}

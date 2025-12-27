@@ -35,7 +35,7 @@ export class UserController {
   }
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  getUserById(@Param('id', ParseIntPipe) id: string) {
+  getUserById(@Param('id',) id: string) {
     return this.userService.getUserById(id);
   }
   @Post()
@@ -46,14 +46,14 @@ export class UserController {
   @Put(':id')
   @HttpCode(HttpStatus.OK)
   updateUserById(
-    @Param('id', ParseIntPipe) id: string,
+    @Param('id',) id: string,
     @Body(ValidationPipe) data: UpdateUserDto,
   ) {
     return this.userService.updateUserById(id, data);
   }
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  remove(@Param('id', ParseIntPipe) id: string) {
+  remove(@Param('id',) id: string) {
     return this.userService.remove(id);
   }
 }

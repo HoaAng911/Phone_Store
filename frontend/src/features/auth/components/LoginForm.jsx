@@ -35,7 +35,7 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white px-4 py-12">
+    <div className="min-h-screen flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-sm">
         {/* Title */}
         <h1 className="text-2xl font-bold text-gray-900 uppercase text-center mb-8">ĐĂNG NHẬP</h1>

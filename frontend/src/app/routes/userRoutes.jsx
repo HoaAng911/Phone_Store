@@ -11,6 +11,7 @@ import ProductCategoryPage from '@/features/products/Product/ProductCategoryPage
 
 import { ArticleListPage, ArticleDetail } from '@/features/articles';
 import CheckoutPage from '@/pages/Checkout';
+import OrderDetailPage from '@/features/profile/ui/OrderPage';
 
 export const UserRoutes = () => {
   return (
@@ -25,6 +26,7 @@ export const UserRoutes = () => {
       {/* Giỏ hàng */}
       <Route path="/cart" element={<CartPage />} />
        <Route path="/checkout" element={<CheckoutPage />} />
+       <Route path="/orders/:id" element={<OrderDetailPage />} />
       {/* Sản phẩm */}
       <Route path="/product/:id" element={<ProductDetail />} />
       <Route path="/products" element={<ProductCategoryPage />} />

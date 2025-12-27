@@ -14,6 +14,8 @@ import { PhoneSpecification } from './phone-specification.entity';
 import { ProductImage } from './product-image.entity';
 import { CartEntity } from 'src/cart/entity/cart.entity';
 import { Product_Review } from '../review/product-review.entity';
+import { Type } from 'class-transformer'; // ← THÊM
+import { IsInt } from 'class-validator'; // ← THÊM
 
 export enum ProductCategory {
   PHONE = 'phone',
@@ -27,7 +29,6 @@ export class ProductEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  // Tên & mô tả
   @Column({ type: 'varchar', length: 255 })
   name: string;
 
@@ -37,17 +38,21 @@ export class ProductEntity {
   @Column({ type: 'text' })
   description: string;
 
-  // Giá & khuyến mãi
   @Column({ type: 'int', default: 0 })
+  @Type(() => Number)
+  @IsInt()
   price: number;
 
   @Column({ type: 'int', default: 0 })
+  @Type(() => Number)
+  @IsInt()
   originalPrice: number;
 
   @Column({ type: 'int', default: 0 })
+  @Type(() => Number)
+  @IsInt()
   discountPercent: number;
 
-  // Thông tin sản phẩm
   @Column({ type: 'varchar', length: 100 })
   brand: string;
 
@@ -61,25 +66,30 @@ export class ProductEntity {
   })
   category: string;
 
-  // Tồn kho & bán hàng
   @Column({ type: 'int', default: 0 })
+  @Type(() => Number)
+  @IsInt()
   stock: number;
 
   @Column({ default: 0 })
+  @Type(() => Number)
+  @IsInt()
   soldCount: number;
+
   @Column({ type: 'decimal', precision: 2, scale: 1, default: 0.0 })
   rating: number;
-  @Column({ default: 0 }) reviewCount: number;
+
+  @Column({ default: 0 })
+  reviewCount: number;
+
   @Column({ default: 0 })
   viewCount: number;
 
-  @OneToMany(() => Product_Review, (review) => review.product,{
-    cascade: true
+  @OneToMany(() => Product_Review, (review) => review.product, {
+    cascade: true,
   })
-  
   reviews: Product_Review[];
 
-  // Trạng thái
   @Column({
     type: 'enum',
     enum: ['active', 'inactive', 'out_stock'],
@@ -90,7 +100,6 @@ export class ProductEntity {
   @Column({ type: 'boolean', default: false })
   isFeatured: boolean;
 
-  // Thời gian
   @CreateDateColumn({ type: 'datetime', precision: 6 })
   createdAt: Date;
 
@@ -101,7 +110,8 @@ export class ProductEntity {
   deletedAt?: Date;
 
   @Column({ type: 'datetime', nullable: true })
-  flashSaleUntil?: Date
+  flashSaleUntil?: Date;
+
   @OneToMany(() => ProductImage, (image) => image.product, {
     cascade: true,
     onDelete: 'CASCADE',

@@ -10,26 +10,27 @@ import { UserEntity } from 'src/user/entity/user.entity';
 import { Repository } from 'typeorm';
 import { OrderItemEntity } from './entity/order-item.entity';
 import { AddressEntity } from 'src/address/address.entity';
-import { CreateCartDto } from 'src/cart/dto/cart.dto';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { NotFoundError } from 'rxjs';
 import { OrderEntity } from './entity/order.entity';
 
 @Injectable()
 export class OrderService {
-
   constructor(
-
     @InjectRepository(ProductEntity)
     private readonly productRepo: Repository<ProductEntity>,
+
     @InjectRepository(UserEntity)
     private readonly userRepo: Repository<UserEntity>,
+
     @InjectRepository(CartEntity)
     private readonly cartRepo: Repository<CartEntity>,
+
     @InjectRepository(OrderItemEntity)
     private readonly orderItemRepo: Repository<OrderItemEntity>,
+
     @InjectRepository(AddressEntity)
     private readonly addressRepo: Repository<AddressEntity>,
+
     @InjectRepository(OrderEntity)
     private readonly orderRepo: Repository<OrderEntity>,
   ) { }
@@ -62,39 +63,49 @@ export class OrderService {
     const orderItems: OrderItemEntity[] = [];
     let totalPrice = 0;
 
+    // ==================== ĐẶT HÀNG TỪ GIỎ HÀNG ====================
     if (dto.type === 'cart') {
       const cartItems = await this.cartRepo.find({
-        where: { userId },
+        where: { user: { id: userId } },
         relations: ['product'],
       });
-      if (cartItems.length === 0) throw new BadRequestException('Giỏ hàng trống');
+
+      if (cartItems.length === 0) {
+        throw new BadRequestException('Giỏ hàng trống');
+      }
 
       for (const item of cartItems) {
         const orderItem = this.orderItemRepo.create({
           product: item.product,
           quantity: item.quantity,
-          price: item.product.price,
+          price: Number(item.product.price),
         });
         orderItems.push(orderItem);
-        totalPrice += item.product.price * item.quantity;
+        totalPrice += Number(item.product.price) * item.quantity;
       }
-      await this.cartRepo.delete({ userId });
+
+      // Xóa giỏ hàng sau khi đặt thành công
+      await this.cartRepo.delete({ user: { id: userId } });
     }
 
+    // ==================== MUA LẺ (SINGLE) ====================
     if (dto.type === 'single') {
-      if (!dto.productId || !dto.quantity)
+      if (!dto.productId || !dto.quantity) {
         throw new BadRequestException('Cần productId và quantity');
+      }
 
-      const product = await this.productRepo.findOne({ where: { id: dto.productId } });
+      const product = await this.productRepo.findOne({
+        where: { id: dto.productId },
+      });
       if (!product) throw new NotFoundException('Sản phẩm không tồn tại');
 
       const orderItem = this.orderItemRepo.create({
         product,
         quantity: dto.quantity,
-        price: product.price,
+        price: Number(product.price), // ÉP KIỂU – FIX LỖI!
       });
       orderItems.push(orderItem);
-      totalPrice = product.price * dto.quantity;
+      totalPrice = Number(product.price) * dto.quantity; // ÉP KIỂU
     }
 
     // 4. Tạo và lưu đơn hàng
@@ -110,19 +121,32 @@ export class OrderService {
     return savedOrder;
   }
 
+  // LẤY DANH SÁCH ĐƠN HÀNG CỦA USER
   async getOrderByID(userId: string): Promise<OrderEntity[]> {
     return this.orderRepo.find({
       where: { user: { id: userId } },
-      relations: ['items', 'item.product', 'address'],
-      order: { createdAt: 'DESC' }
-    })
+      relations: ['items', 'items.product', 'address'], // SỬA: items.product (không phải item.product)
+      order: { createdAt: 'DESC' },
+    });
   }
+
+  // LẤY TẤT CẢ ĐƠN HÀNG (ADMIN)
   async getAllOrder(): Promise<OrderEntity[]> {
-    const orders = await this.orderRepo.find({
+    return this.orderRepo.find({
       relations: ['items', 'items.product', 'address', 'user'],
       order: { createdAt: 'DESC' },
+    });
+  }
+  async getOrderDetail(orderId: string): Promise<OrderEntity> {
+    const order = await this.orderRepo.findOne({
+      where: { id: orderId },
+      relations: ['items', 'items.product', 'address', 'user'],
+    });
+
+    if (!order) {
+      throw new NotFoundException('Đơn hàng không tồn tại');
     }
-    )
-    return orders
+
+    return order;
   }
 }
